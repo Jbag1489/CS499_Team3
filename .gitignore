@@ -1,1 +1,8 @@
 /CS499PirateSimJME/nbproject/private/
+*.jar
+CS499PirateSimJME/build/built-jar.properties
+*.netbeans_automatic_build
+CS499PirateSimJME/build/classes/PirateSim/Main.class
+*.class
+CS499PirateSimJME/lwjgl64.dll
+*.dll

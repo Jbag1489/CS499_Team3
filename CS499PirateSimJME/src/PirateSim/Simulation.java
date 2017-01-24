@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pirateSim;
+package PirateSim;
 
 import java.util.Date;
 import java.util.ArrayList;
@@ -13,8 +13,8 @@ class Simulation {
     Vec2 size;
     Cell[][] cells;
     ArrayList<Ship> ships;
-    ArrayList<Ship> deadShips;
-    static final int CARGO = 0, PIRATE = 1, PATROL = 2, CAPTURED = 3, WRECK = 4;
+    private ArrayList<Ship> deadShips;
+    static final int CARGO = 0, PIRATE = 1, PATROL = 2, CAPTURED = 3, WRECK = 4, REMOVED = 5;
     double probNewShip [];
     int timestep;
     Random rand;
@@ -29,6 +29,7 @@ class Simulation {
             for(int j = 0; j < cells[i].length; j++) cells[i][j] = new Cell();
         }
         ships = new ArrayList();
+        
         deadShips = new ArrayList();
         probNewShip = new double[3];
         probNewShip[CARGO] = cProbNewCargo;
@@ -41,6 +42,7 @@ class Simulation {
             for(int j = 0; j < cells[i].length; j++)
                 cells[i][j].ships.clear();
         }
+        for (Ship ship : ships) ship.setPreviousState();
         for (Ship ship : ships) ship.move();
         for (int i = 0; i < 3; i++) generateShip(i);
         deleteDeadShips();
@@ -60,18 +62,16 @@ class Simulation {
     int random(int maxValue) {return Math.abs(rand.nextInt() % (maxValue + 1));}
     boolean test(double prob) {return Math.abs(rand.nextInt()) < prob*Integer.MAX_VALUE;}
     boolean inBounds(int x, int y) {return (x >= 0) && (x < size.x) && (y >= 0) && (y < size.y);}
-    int getID() {return nextID++;}
     class Cell {
         ArrayList<Ship> ships;
         Cell() {ships = new ArrayList();}
     }
-    
     class Ship {
         Vec2 position;
         Vec2 velocity;
         int type;
         int age;
-        int ID;
+        Ship previousState;
         
         Ship(int cType) {
             position = new Vec2();
@@ -97,7 +97,12 @@ class Simulation {
             if (velocity.y > 0) position.y = 0;
             else if (velocity.y < 0) position.y = size.y - 1;
             else position.y = random(size.y - 1);
-            ID = getID();
+        }
+        Ship(Vec2 pPosition, Vec2 pVelocity, int pType, int pAge) {
+            position = new Vec2(pPosition.x, pPosition.y);
+            velocity = new Vec2(pVelocity.x, pVelocity.y);
+            type = pType;
+            age = pAge;
         }
         void move() {
             if (type == WRECK) {
@@ -123,6 +128,7 @@ class Simulation {
                     type = CAPTURED;
                     velocity.x = 0;
                     velocity.y = -1;
+                    pirate.type = REMOVED;
                     deadShips.add(pirate);
                 }
                 break;
@@ -154,10 +160,14 @@ class Simulation {
             neighbors.remove(this);
             return neighbors;
         }
+        void setPreviousState() {previousState = this.clone();}
+        @Override
+        protected Ship clone() {return new Ship(position, velocity, type, age);}
     }
     void generateShip(int type) {
         if (test(probNewShip[type])) {
             Ship ship = new Ship(type);
+            ship.previousState = ship.clone();
             ships.add(ship);
             cells[ship.position.x][ship.position.y].ships.add(ship);
         }
@@ -167,30 +177,20 @@ class Simulation {
         Vec2() {x = 0; y = 0;}
         Vec2(int cx, int cy) {x = cx; y = cy;}
         void plus(Vec2 operand) {x += operand.x; y += operand.y;}
+        void minus(Vec2 operand) {x -= operand.x; y -= operand.y;}
         void assign(Vec2 operand) {x = operand.x; y = operand.y;}
     }
-    
     void textDisplay() {
         for(int j = cells[0].length - 1; j > -1; j--) {
             for(int i = 0; i < cells.length; i++) {
                 if (!cells[i][j].ships.isEmpty()) {
                     Ship ship = cells[i][j].ships.get(0);
                     switch (ship.type) {
-                    case CARGO:
-                        System.out.print("OO");
-                        break;
-                    case PIRATE:
-                        System.out.print("XX");
-                        break;
-                    case PATROL:
-                        System.out.print("88");
-                        break;
-                    case CAPTURED:
-                        System.out.print("LL");
-                        break;
-                    case WRECK:
-                        System.out.print("##");
-                        break;
+                    case CARGO:     System.out.print("OO"); break;
+                    case PIRATE:    System.out.print("XX"); break;
+                    case PATROL:    System.out.print("88"); break;
+                    case CAPTURED:  System.out.print("LL"); break;
+                    case WRECK:     System.out.print("##"); break;
                     }
                 } else System.out.print("^^");
             }
