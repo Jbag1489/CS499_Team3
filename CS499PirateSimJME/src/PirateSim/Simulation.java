@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.ArrayList;
 import java.util.Random;
 
-class Simulation {
+class Simulation { //What are you doing git?
     Vec2 size;
     Cell[][] cells;
     ArrayList<Ship> ships;
