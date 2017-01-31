@@ -14,9 +14,12 @@ class Simulation {
     Cell[][] cells;
     ArrayList<Ship> ships;
     private ArrayList<Ship> deadShips;
-    static final int CARGO = 0, PIRATE = 1, PATROL = 2, CAPTURED = 3, WRECK = 4, REMOVED = 5;
+    static final int CARGO = 0, CAPTURED = 1, PATROL = 2, PIRATE = 3, ESCORTPIRATE = 4, WRECK = 5, ESCORTWRECK = 6;
+    static final int NUM_SHIP_TYPES = 7;
+    static final int INTERPOLATION_SAMPLES = 4;
+    static final int BORDER_SIZE = 5;
     double probNewShip [];
-    int timestep;
+    int timeStep;
     Random rand;
     int nextID;
     
@@ -28,10 +31,9 @@ class Simulation {
         for(int i = 0; i < cells.length; i++) {
             for(int j = 0; j < cells[i].length; j++) cells[i][j] = new Cell();
         }
-        ships = new ArrayList();
-        
+        ships = new ArrayList();       
         deadShips = new ArrayList();
-        probNewShip = new double[3];
+        probNewShip = new double[NUM_SHIP_TYPES];
         probNewShip[CARGO] = cProbNewCargo;
         probNewShip[PIRATE] = cProbNewPirate;
         probNewShip[PATROL] = cProbNewPatrol;
@@ -42,14 +44,15 @@ class Simulation {
             for(int j = 0; j < cells[i].length; j++)
                 cells[i][j].ships.clear();
         }
-        for (Ship ship : ships) ship.setPreviousState();
+        for (Ship ship : ships) ship.addPreviousState();
         for (Ship ship : ships) ship.move();
-        for (int i = 0; i < 3; i++) generateShip(i);
+        for (int i = 0; i < NUM_SHIP_TYPES; i++) generateShip(i);
         deleteDeadShips();
         for (Ship ship : ships) ship.doDefeat();
         deleteDeadShips();
         for (Ship ship : ships) ship.doCapAndResc();
         deleteDeadShips();
+        timeStep++;
     }
     void deleteDeadShips() {
         for (Ship ship : deadShips) {
@@ -58,10 +61,11 @@ class Simulation {
         }
         deadShips.clear();
     }
-    Date getElapsedTime() {return new Date(0, 0, 0, 0, timestep*5);}
+    Date getElapsedTime() {return new Date(0, 0, 0, 0, timeStep*5);}
     int random(int maxValue) {return Math.abs(rand.nextInt() % (maxValue + 1));}
     boolean test(double prob) {return Math.abs(rand.nextInt()) < prob*Integer.MAX_VALUE;}
     boolean inBounds(int x, int y) {return (x >= 0) && (x < size.x) && (y >= 0) && (y < size.y);}
+    boolean inBorder(int x, int y) {return (x >= -BORDER_SIZE) && (x < size.x + BORDER_SIZE) && (y >= -BORDER_SIZE) && (y < size.y + BORDER_SIZE);}
     class Cell {
         ArrayList<Ship> ships;
         Cell() {ships = new ArrayList();}
@@ -71,12 +75,13 @@ class Simulation {
         Vec2 velocity;
         int type;
         int age;
-        Ship previousState;
+        ArrayList<Ship> previousStates;
         
         Ship(int cType) {
             position = new Vec2();
             velocity = new Vec2();
             type = cType;
+            previousStates = new ArrayList();
             switch (type) {
             case CARGO:
                 velocity.x = 1;
@@ -105,20 +110,22 @@ class Simulation {
             age = pAge;
         }
         void move() {
-            if (type == WRECK) {
+            if (type == WRECK || type == ESCORTWRECK) {
                 if (age > 5) deadShips.add(this);
                 age++;
-                cells[position.x][position.y].ships.add(this);
                 return;
             }
             position.plus(velocity);
             if (inBounds(position.x, position.y))
                 cells[position.x][position.y].ships.add(this);
-            else deadShips.add(this);
+            else if (!inBorder(position.x, position.y)) {
+                deadShips.add(this);
+            }
         }
         void doDefeat() {
-            if (type == PIRATE) if (getNeighbor(PATROL) != null)
-                type = WRECK;
+            if (type == PIRATE || type == ESCORTPIRATE) if (getNeighbor(PATROL) != null)
+                if (type == PIRATE) type = WRECK;
+                else type = ESCORTWRECK;
         }
         void doCapAndResc() {
             switch (type) {
@@ -128,8 +135,10 @@ class Simulation {
                     type = CAPTURED;
                     velocity.x = 0;
                     velocity.y = -1;
-                    pirate.type = REMOVED;
-                    deadShips.add(pirate);
+                    pirate.type = ESCORTPIRATE;
+                    pirate.velocity.y = -1;
+                    pirate.position.x = position.x;
+                    pirate.position.y = position.y;
                 }
                 break;
             case CAPTURED:
@@ -160,15 +169,19 @@ class Simulation {
             neighbors.remove(this);
             return neighbors;
         }
-        void setPreviousState() {previousState = this.clone();}
+        void addPreviousState() {previousStates.add(this.clone());}
         @Override
         protected Ship clone() {return new Ship(position, velocity, type, age);}
     }
     void generateShip(int type) {
         if (test(probNewShip[type])) {
             Ship ship = new Ship(type);
-            ship.previousState = ship.clone();
             ships.add(ship);
+            for (int i = 0; i < INTERPOLATION_SAMPLES; i++) {
+                Ship interpState = ship.clone();
+                interpState.position.minus(new Vec2(interpState.velocity.x*(INTERPOLATION_SAMPLES - i), interpState.velocity.y*(INTERPOLATION_SAMPLES - i)));
+                ship.previousStates.add(interpState);
+            }
             cells[ship.position.x][ship.position.y].ships.add(ship);
         }
     }
@@ -179,6 +192,7 @@ class Simulation {
         void plus(Vec2 operand) {x += operand.x; y += operand.y;}
         void minus(Vec2 operand) {x -= operand.x; y -= operand.y;}
         void assign(Vec2 operand) {x = operand.x; y = operand.y;}
+        void mult(int scaler) {x *= scaler; y *= scaler;}
     }
     void textDisplay() {
         for(int j = cells[0].length - 1; j > -1; j--) {

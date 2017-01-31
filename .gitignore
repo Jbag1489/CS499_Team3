@@ -6,3 +6,4 @@ CS499PirateSimJME/build/classes/PirateSim/Main.class
 *.class
 CS499PirateSimJME/lwjgl64.dll
 *.dll
+*.netbeans_update_resources
