@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.ArrayList;
 import java.util.Random;
 
-class Simulation { //What are you doing git?
+class Simulation {
     Vec2 size;
     Cell[][] cells;
     ArrayList<Ship> ships;
@@ -21,7 +21,7 @@ class Simulation { //What are you doing git?
     double probNewShip [];
     int timeStep;
     Random rand;
-    int nextID;
+    int nextID = 0;
     
     Simulation(int xSize, int ySize, double cProbNewCargo, double cProbNewPirate, double cProbNewPatrol, long seed) {
         size = new Vec2();
@@ -74,7 +74,8 @@ class Simulation { //What are you doing git?
         Vec2 position;
         Vec2 velocity;
         int type;
-        int age;
+        int ticksSinceLastMove;
+        int ID;
         ArrayList<Ship> previousStates;
         
         Ship(int cType) {
@@ -82,6 +83,7 @@ class Simulation { //What are you doing git?
             velocity = new Vec2();
             type = cType;
             previousStates = new ArrayList();
+            ID = getNewID();
             switch (type) {
             case CARGO:
                 velocity.x = 1;
@@ -103,16 +105,17 @@ class Simulation { //What are you doing git?
             else if (velocity.y < 0) position.y = size.y - 1;
             else position.y = random(size.y - 1);
         }
-        Ship(Vec2 pPosition, Vec2 pVelocity, int pType, int pAge) {
+        Ship(Vec2 pPosition, Vec2 pVelocity, int pType, int pTicksSinceLastMove, int pID) {
             position = new Vec2(pPosition.x, pPosition.y);
             velocity = new Vec2(pVelocity.x, pVelocity.y);
             type = pType;
-            age = pAge;
+            ticksSinceLastMove = pTicksSinceLastMove;
+            ID = pID;
         }
         void move() {
             if (type == WRECK || type == ESCORTWRECK) {
-                if (age > 5) deadShips.add(this);
-                age++;
+                if (ticksSinceLastMove > 5) deadShips.add(this);
+                ticksSinceLastMove++;
                 return;
             }
             position.plus(velocity);
@@ -171,7 +174,7 @@ class Simulation { //What are you doing git?
         }
         void addPreviousState() {previousStates.add(this.clone());}
         @Override
-        protected Ship clone() {return new Ship(position, velocity, type, age);}
+        protected Ship clone() {return new Ship(position, velocity, type, ticksSinceLastMove, ID);}
     }
     void generateShip(int type) {
         if (test(probNewShip[type])) {
@@ -185,6 +188,7 @@ class Simulation { //What are you doing git?
             cells[ship.position.x][ship.position.y].ships.add(ship);
         }
     }
+    int getNewID() {return nextID++;}
     class Vec2 {
         int x, y;
         Vec2() {x = 0; y = 0;}
@@ -193,6 +197,7 @@ class Simulation { //What are you doing git?
         void minus(Vec2 operand) {x -= operand.x; y -= operand.y;}
         void assign(Vec2 operand) {x = operand.x; y = operand.y;}
         void mult(int scaler) {x *= scaler; y *= scaler;}
+        public boolean equals(Vec2 operand) {return x == operand.x && y == operand.y;}
     }
     void textDisplay() {
         for(int j = cells[0].length - 1; j > -1; j--) {

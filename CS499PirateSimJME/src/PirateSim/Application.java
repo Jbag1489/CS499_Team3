@@ -1,22 +1,26 @@
 package PirateSim;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.math.Vector3f;
 import com.jme3.system.AppSettings;
 import com.jme3.renderer.RenderManager;
 
 public class Application extends SimpleApplication {
     Simulation sim;
     Scene scene;
+    PanCamera panCam;
     float timeSinceLastFrame, timeSinceLastTick;
     float timeAcceleration = 1;
     static final int targetFPS = 30;
     boolean simPaused = false;
-    
+
     public static void main(String[] args) {
         Application app = new Application();
     }
 
-    Application() {        
+    Application() {
+        setDisplayFps(true);
+        setShowSettings(true);
         settings = new AppSettings(true);
         settings.setFrameRate(targetFPS);
         settings.setTitle("Somali Pirate Simulation");
@@ -27,6 +31,8 @@ public class Application extends SimpleApplication {
     public void simpleInitApp() {
         sim = new Simulation(20, 10, 0.4, 0.25, 0.2, 6545);
         scene = new Scene(sim, rootNode, assetManager);
+        panCam = new PanCamera(cam, inputManager, getFlyByCamera());
+        panCam.register();
         timeSinceLastFrame = 0;
     }
     @Override
