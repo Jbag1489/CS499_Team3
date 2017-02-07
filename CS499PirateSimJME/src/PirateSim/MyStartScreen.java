@@ -59,7 +59,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
-        this.myApp = (SimpleApplication) app;
+        myApp = (SimpleApplication) app;
     }
 
     @Override

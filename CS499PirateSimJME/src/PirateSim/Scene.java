@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package PirateSim;
 
 import com.jme3.asset.AssetManager;
@@ -21,8 +17,8 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 
 /**
- *
- * @author Owen
+ * Class to create a JME scenegraph for a given simulation state.
+ * Still under construction so no javadoc for now
  */
 public class Scene {
     AssetManager assetMan;
@@ -39,10 +35,12 @@ public class Scene {
         boats = new Boats();
         background = new Background();
     }
+    //update all the scene elements, just boats and the background for now
     void update(float alpha) {
         boats.update(alpha);
         background.update(alpha);
     }
+    //currently not being used
     void translateMesh(Mesh mesh, float x, float y) {
         VertexBuffer verts = mesh.getBuffer(VertexBuffer.Type.Position);
         for (int i = 0; i < verts.getNumElements(); i++) {
@@ -52,6 +50,7 @@ public class Scene {
             verts.setElementComponent(i, 1, newY);
         }
     }
+    //creates axis reference for debugging purposes
     void createAxisReference() {
         Arrow arrows[] = new Arrow[3];
         ColorRGBA colors[] = new ColorRGBA[3];
@@ -74,12 +73,15 @@ public class Scene {
         }
     }
     
+    //This class renders the boats, called boats instead of ships to differentiate it from Simulation.Ship
     class Boats {
+        //these arrays track the properties of each type of boat
         Mesh meshes[];
         Material mats[];
-        Vector3f centers[];
-        Node shipNode;
+        Vector3f centers[]; //the position within a cell of the boat's center
+        Node shipNode; //node in the scenegraph that all boat nodes live under
         
+        //initialize meshes, materials, and center postions for each type of boat
         Boats() {
             meshes = new Box[Simulation.NUM_SHIP_TYPES];
             mats = new Material[Simulation.NUM_SHIP_TYPES];
@@ -96,12 +98,15 @@ public class Scene {
             shipNode = new Node("ships");
             rootNode.attachChild(shipNode);
         }
+        //Convenience function to generate boat meshes etc. 
         final void generateBoatType(int type, Mesh mesh, ColorRGBA color, float centerX, float centerY) {
             meshes[type] = mesh;
             mats[type] = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
             mats[type].setColor("Color", color);
             centers[type] = new Vector3f(centerX, centerY, 0);
         }
+        //updates the positions of boat nodes in scenegraph based on the current state of sim.ships
+        //alpha is the amount of time since the last tick, alpha = 1 is the next tick
         void update(float alpha) {
             shipNode.detachAllChildren();
             for (Simulation.Ship ship : sim.ships) {
@@ -116,6 +121,7 @@ public class Scene {
                 boatGeo.getLocalTransform().set(transform);
             }
         }
+        //returns the interpolated transform (heading and position in this case) of the given ship at time alpha
         Transform interpolateShipTransform(Simulation.Ship ship, float alpha) {
             Vector3f sample0 = sampleShipPos(ship, 0);
             Vector3f sample1 = sampleShipPos(ship, 1);
@@ -123,6 +129,7 @@ public class Scene {
             Vector3f sample3 = sampleShipPos(ship, 3);
             Vector3f translation = FastMath.interpolateCatmullRom(alpha, 0.5f, sample3, sample2, sample1, sample0);
             Vector3f delta;
+            //does this even work lol?
             if (!(sample1.x == sample2.x && sample1.y == sample2.y)) {
                 delta = FastMath.interpolateCatmullRom(alpha - 0.1f*step(alpha - 0.5f), 0.5f, sample3, sample2, sample1, sample0).subtract(translation);
                 delta = delta.mult(-step(alpha - 0.5f));
@@ -142,6 +149,7 @@ public class Scene {
             //return FastMath.interpolateLinear(alpha, sampleShipPos(ship, 1), sampleShipPos(ship, 0));
             //return sampleShipPos(ship, 0);
         }
+        //samples the ships position from the previousStates arrayList at the current time minus tMinus.
         Vector3f sampleShipPos(Simulation.Ship ship, int tMinus) {
             Vector3f posOut = new Vector3f();
             Simulation.Ship previousShip = ship.previousStates.get(ship.previousStates.size() - tMinus - 1);
@@ -153,9 +161,13 @@ public class Scene {
         private float step(float x) { if (x > 0) return 1; else return -1;}
     }
     
+    /**
+     * This class renders scenery like the sea and surounding terrain
+     */
     class Background {
         Node backgroundNode;
         
+        //creates map grid, quad for the sea, TODO terrain
         Background() {
             createAxisReference();
             
