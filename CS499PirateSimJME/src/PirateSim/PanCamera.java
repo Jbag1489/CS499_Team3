@@ -16,8 +16,9 @@ import com.jme3.input.FlyByCamera;
 import com.jme3.math.Vector3f;
 
 /**
- *
- * @author Owen
+ * This class implements a camera that pans around.
+ * It is very boring so I wouldn't worry about it.
+ * TODO make flyCam debug only
  */
 public class PanCamera implements AnalogListener, ActionListener {
     InputManager inputMan;

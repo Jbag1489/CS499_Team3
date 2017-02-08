@@ -6,8 +6,13 @@ CS499PirateSimJME/build/built-jar.properties
 CS499PirateSimJME/lwjgl64.dll
 *.dll
 /CS499PirateSimJME/build/
+<<<<<<< HEAD
 /CS499PirateSimJME/dist/
 *.properties
 CS499PirateSimJME/nbproject/genfiles.properties
 CS499PirateSimJME/nbproject/build-impl.xml
 CS499PirateSimJME/nbproject/build-impl.xml
+=======
+*.netbeans_update_resources
+*.properties
+>>>>>>> master
