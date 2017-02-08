@@ -19,13 +19,17 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     private SimpleApplication app;
     static Application myApp = new Application();
     
-
+    // Need values for SimSpeed (0 for pause)
+    float simSpeed = 1; // ties to timeAcceleration in Application
+    boolean simPaused = true; // ties to simPaused in Application
+           // Initialize to true, when start is pressed, it will "unpause" 
+    
     /**
      * custom methods
      */
     public void startGame(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
-        // start the game and do some more stuff...
+        simPaused = false; // Will start running the simulation
     }
 
     public void quitGame() {
@@ -36,6 +40,15 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         /**
          * Your custom constructor, can accept arguments
          */
+    }
+    
+    public void changePauseState(){
+        if(simPaused){
+            simPaused = false;
+        }
+        else{
+            simPaused = true;
+        }
     }
 
     /**

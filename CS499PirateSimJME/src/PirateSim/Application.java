@@ -62,6 +62,10 @@ public class Application extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf) {
+        
+        this.simPaused = startScreen.simPaused;
+        this.timeAcceleration = startScreen.simSpeed;
+        
         if (!simPaused) {
             timeSinceLastTick += tpf;
             timeSinceLastFrame += tpf;
