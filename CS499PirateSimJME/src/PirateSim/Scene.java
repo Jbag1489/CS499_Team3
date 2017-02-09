@@ -1,6 +1,8 @@
 package PirateSim;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -26,6 +28,7 @@ public class Scene {
     Node rootNode;
     Boats boats;
     Background background;
+    Lighting lighting;
     static final int SEA_BORDER_SIZE = 6;
     
     Scene(Simulation pSim, Node pRootNode, AssetManager pAssetMan) {
@@ -34,11 +37,13 @@ public class Scene {
         assetMan = pAssetMan;
         boats = new Boats();
         background = new Background();
+        lighting = new Lighting(16, 0f, 180f, (new Vector3f(0f, 1f, 0f)).normalizeLocal());
     }
     //update all the scene elements, just boats and the background for now
     void update(float alpha) {
         boats.update(alpha);
         background.update(alpha);
+        lighting.update(alpha);
     }
     //currently not being used
     void translateMesh(Mesh mesh, float x, float y) {
@@ -101,8 +106,10 @@ public class Scene {
         //Convenience function to generate boat meshes etc. 
         final void generateBoatType(int type, Mesh mesh, ColorRGBA color, float centerX, float centerY) {
             meshes[type] = mesh;
-            mats[type] = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
-            mats[type].setColor("Color", color);
+            mats[type] = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
+            mats[type].setColor("Ambient", color);
+            mats[type].setColor("Diffuse", color);
+            mats[type].setBoolean("UseMaterialColors",true);
             centers[type] = new Vector3f(centerX, centerY, 0);
         }
         //updates the positions of boat nodes in scenegraph based on the current state of sim.ships
@@ -173,8 +180,10 @@ public class Scene {
             
             Quad ground = new Quad(sim.size.x + SEA_BORDER_SIZE*2, sim.size.y + SEA_BORDER_SIZE*2);
             Geometry seaGeom = new Geometry("Quad", ground);
-            Material mat = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
-            mat.setColor("Color", ColorRGBA.Blue);
+            Material mat = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
+            mat.setColor("Ambient", ColorRGBA.Blue);
+            mat.setColor("Diffuse", ColorRGBA.Blue);
+            mat.setBoolean("UseMaterialColors",true);
             seaGeom.setMaterial(mat);
             seaGeom.center().getLocalTranslation().set(-SEA_BORDER_SIZE, -SEA_BORDER_SIZE, 0f);
 
@@ -194,6 +203,94 @@ public class Scene {
         }
         void update(float alhpa) {
             //TODO animated water
+        }
+    }
+    
+    class Lighting {
+        Node lightNode;
+        DirectionalLight sunLight;
+        DirectionalLight moonLight;
+        DirectionalLight currentLight;
+        AmbientLight sunAmbient;
+        AmbientLight moonAmbient;
+        float degrees = 0, degMin = 0, degMax = 180;
+        float previousAlpha = 0, deltaAlpha = 0;
+        int dayHours;
+        boolean isDay = true;
+        
+        Lighting(int pdayHours, float pdegMin, float pdegMax, Vector3f direction) {
+            dayHours = pdayHours;
+            degMin = pdegMin;
+            degMax = pdegMax;
+            degrees = degMin;
+            sunLight = new DirectionalLight();
+            sunLight.setDirection(direction);
+            sunLight.setColor(ColorRGBA.White);
+            sunAmbient = new AmbientLight();
+            sunAmbient.setColor(ColorRGBA.Blue.mult(0.1f));
+            
+            moonLight = new DirectionalLight();
+            moonLight.setDirection(direction);
+            moonLight.setColor(ColorRGBA.White.mult(0.2f));
+            moonAmbient = new AmbientLight();
+            moonAmbient.setColor(ColorRGBA.Blue.mult(0.05f));
+            
+            rootNode.addLight(sunLight);
+            rootNode.addLight(sunAmbient);
+            currentLight = sunLight;
+        }
+        
+        void update(float alpha) {
+            if (degrees > degMax) {
+                toggleDayNight();
+                degrees = degMin;
+            }
+            else {
+                if (alpha > previousAlpha) {
+                    deltaAlpha = alpha - previousAlpha;
+                }
+                else {
+                    deltaAlpha = 1 - previousAlpha;
+                    deltaAlpha += alpha;
+                }
+                previousAlpha = alpha;
+                
+                updateDegrees(deltaAlpha);
+                Vector3f dir = currentLight.getDirection();
+                dir = dir.add(0.0f, FastMath.cos(degrees * FastMath.DEG_TO_RAD), -FastMath.sin(degrees * FastMath.DEG_TO_RAD)).normalizeLocal();
+                currentLight.setDirection(dir);
+            }
+        }
+        
+        void toggleDayNight() {
+            if (isDay) {
+                isDay = false;
+                rootNode.removeLight(sunLight);
+                rootNode.removeLight(sunAmbient);
+                rootNode.addLight(moonLight);
+                rootNode.addLight(moonAmbient);
+                currentLight = moonLight;
+            }
+            else {
+                isDay = true;
+                rootNode.removeLight(moonLight);
+                rootNode.removeLight(moonAmbient);
+                rootNode.addLight(sunLight);
+                rootNode.addLight(sunAmbient);
+                currentLight = sunLight;
+            }
+        }
+        
+        void updateDegrees(float deltaAlpha) {
+            //solve the proportion for x: deltaAlpha / dayHours = x / 180
+            deltaAlpha *= 5; //convert deltaAlpha to minutes => 1 alpha == 5 minutes
+            float hours = dayHours * 60; //convert dayHours to minutes
+            if (isDay) {
+                degrees += 180f * deltaAlpha / hours;
+            }
+            else {
+                degrees += 180f * deltaAlpha / (24f * 60f - hours);
+            }
         }
     }
 }
