@@ -43,7 +43,7 @@ public class Application extends SimpleApplication {
     //initialize application controlled objects like the simulation state (sim), the scene controller (scene), the camera, the GUI, etc.
     @Override
     public void simpleInitApp() {
-        sim = new Simulation(200, 100, 0.4, 0.25, 0.2, 6545);
+        sim = new Simulation(20, 10, 0.4, 0.25, 0.2, 6545);
         scene = new Scene(sim, rootNode, assetManager);
         panCam = new PanCamera(cam, inputManager, getFlyByCamera());
         panCam.register();

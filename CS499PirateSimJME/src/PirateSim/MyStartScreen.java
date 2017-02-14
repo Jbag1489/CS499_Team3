@@ -9,6 +9,8 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.controls.Label;
+import de.lessvoid.nifty.controls.TextField;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
@@ -18,18 +20,36 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     private Screen screen;
     private SimpleApplication app;
     static Application myApp = new Application();
+    private TextField simSpeedTextField;
+    
+      
+    
     
     // Need values for SimSpeed (0 for pause)
     float simSpeed = 1; // ties to timeAcceleration in Application
     boolean simPaused = true; // ties to simPaused in Application
-           // Initialize to true, when start is pressed, it will "unpause" 
-    
+    // Initialize to true, when start is pressed, it will "unpause" 
+
     /**
      * custom methods
      */
     public void startGame(String nextScreen) {
+
+        // Get simulation speed from text box...hopefully
+        TextField textField = screen.findNiftyControl("simSpeedTextField", TextField.class);
+        String text = textField.getDisplayedText();
+        System.out.println(text);
+
         nifty.gotoScreen(nextScreen);  // switch to another screen
         simPaused = false; // Will start running the simulation
+    }
+    
+    /*
+     * Not yet implemented, but this works to update the labels
+     */
+    public void updateLabel(){
+        Label label = screen.findNiftyControl("simSpeedLabel", Label.class);
+        label.setText("the text updated");
     }
 
     public void quitGame() {
@@ -41,12 +61,11 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
          * Your custom constructor, can accept arguments
          */
     }
-    
-    public void changePauseState(){
-        if(simPaused){
+
+    public void changePauseState() {
+        if (simPaused) {
             simPaused = false;
-        }
-        else{
+        } else {
             simPaused = true;
         }
     }
@@ -57,7 +76,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     public void bind(Nifty nifty, Screen screen) {
         this.nifty = nifty;
         this.screen = screen;
-        
+
     }
 
     public void onStartScreen() {
