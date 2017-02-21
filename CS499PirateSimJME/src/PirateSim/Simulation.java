@@ -71,9 +71,9 @@ class Simulation {
         for (Ship ship : ships) ship.doCapAndResc();
         timeStep++;
     }
-    /** * Gets the amount of time that has elapsed since the simulation started.
+    /** * Gets the number of days that have elapsed since the simulation started.
      * @return the elapsed time */
-    Date getElapsedTime() {return new Date(0, 0, 0, 0, timeStep*5);}
+    float getElapsedDays(float alpha) {return 5/(60*24)*(timeStep + alpha);}
 
     /** * Represents a ship in the simulation. */
     class Ship {
