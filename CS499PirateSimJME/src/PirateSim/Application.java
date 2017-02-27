@@ -67,11 +67,15 @@ public class Application extends SimpleApplication {
         //flyCam.setDragToRotate(true); // you need the mouse for clicking now 
         
         /* Josh Test Addition End */
+        
     }
 
     //Per frame update function
     @Override
     public void simpleUpdate(float tpf) {
+        sim.setProbCargo(startScreen.getCargoProb());
+        sim.setProbPatrol(startScreen.getPatrolProb());
+        sim.setProbPirate(startScreen.getPirateProb());
         
         this.simPaused = startScreen.simPaused;
         this.timeAcceleration = startScreen.simSpeed;

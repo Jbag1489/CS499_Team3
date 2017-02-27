@@ -53,6 +53,19 @@ class Simulation {
         probNewShip[PATROL] = cProbNewPatrol;
         rand = new Random(seed);
     }
+    
+    void setProbCargo(double newProb){
+        probNewShip[CARGO] = newProb;
+    }
+    
+    void setProbPatrol(double newProb){
+        probNewShip[PATROL] = newProb;
+    }
+    
+    void setProbPirate(double newProb){
+        probNewShip[PIRATE] = newProb;
+    }
+    
     /** * Updates the simulation, the time increment is nominally five minutes. */
     void tick() {
         for(int i = 0; i < cells.length; i++) {
