@@ -15,9 +15,7 @@ public class Application extends SimpleApplication {
     Scene scene;
     PanCamera panCam; //SimpleApplication's FlyCam is not suitable for this application, so this camera is used
     float timeSinceLastFrame, timeSinceLastTick;
-    float timeAcceleration = 1;
     static final int targetFPS = 30;
-    boolean simPaused = false;
     private MyStartScreen startScreen;
 
     //program entry point
@@ -81,18 +79,19 @@ public class Application extends SimpleApplication {
         this.timeAcceleration = startScreen.simSpeed;
         
         //Fun code to compute which simulation timestep should be rendered at which alpha
-        if (!simPaused) {
+        if (!startScreen.simPaused) {
             timeSinceLastTick += tpf;
             timeSinceLastFrame += tpf;
+            float simSpeed = 1;//startScreen.simSpeed;
+            //continue ticking the simulation until timeSinceLastTick is less than the length of a tick (1/timeAcceleration, since ticks are one second each).
+            while (timeSinceLastTick > 1/simSpeed) {
+                sim.tick();
+                timeSinceLastTick -= 1/simSpeed;
+            }
+            float alpha = timeSinceLastTick*simSpeed;
+            //update the scene now that the simulation state is correct and alpha has been found
+            scene.update(alpha);
         }
-        //continue ticking the simulation until timeSinceLastTick is less than the length of a tick (1/timeAcceleration, since ticks are one second each).
-        while (timeSinceLastTick > 1 / timeAcceleration) {
-            sim.tick();
-            timeSinceLastTick -= 1 / timeAcceleration;
-        }
-        float alpha = timeSinceLastTick * timeAcceleration;
-        //update the scene now that the simulation state is correct and alpha has been found
-        scene.update(alpha);
     }
     
     //We hopefully we will not need to use this
