@@ -75,9 +75,6 @@ public class Application extends SimpleApplication {
         sim.setProbPatrol(startScreen.getPatrolProb());
         sim.setProbPirate(startScreen.getPirateProb());
         
-        this.simPaused = startScreen.simPaused;
-        this.timeAcceleration = startScreen.simSpeed;
-        
         //Fun code to compute which simulation timestep should be rendered at which alpha
         if (!startScreen.simPaused) {
             timeSinceLastTick += tpf;
