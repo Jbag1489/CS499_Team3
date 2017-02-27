@@ -9,6 +9,8 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Transform;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.ViewPort;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
@@ -17,6 +19,7 @@ import com.jme3.scene.debug.Arrow;
 import com.jme3.scene.debug.Grid;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
+import com.jme3.shadow.DirectionalLightShadowRenderer;
 
 /**
  * Class to create a JME scenegraph for a given simulation state.
@@ -25,16 +28,18 @@ import com.jme3.scene.shape.Quad;
 public class Scene {
     AssetManager assetMan;
     Simulation sim;
+    ViewPort viewPort;
     Node rootNode;
     Boats boats;
     Background background;
     Lighting lighting;
     static final int SEA_BORDER_SIZE = 6;
     
-    Scene(Simulation pSim, Node pRootNode, AssetManager pAssetMan) {
+    Scene(Simulation pSim, Node pRootNode, AssetManager pAssetMan, ViewPort pViewPort) {
         sim = pSim;
         rootNode = pRootNode;
         assetMan = pAssetMan;
+        viewPort = pViewPort;
         boats = new Boats();
         background = new Background();
         lighting = new Lighting(16, 0f, 180f, (new Vector3f(0f, 1f, 0f)).normalizeLocal());
@@ -69,6 +74,7 @@ public class Scene {
         for (int i = 0; i < 3; i++) {
             arrows[i].setLineWidth(4);
             Geometry g = new Geometry("coordinate axis", arrows[i]);
+            g.setShadowMode(RenderQueue.ShadowMode.Off);
             Material mat = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
             mat.getAdditionalRenderState().setWireframe(true);
             mat.setColor("Color", colors[i]);
@@ -189,6 +195,7 @@ public class Scene {
 
             Grid mapGrid = new Grid(sim.size.y + 1, sim.size.x + 1, 1);
             Geometry gridGeom = new Geometry("Grid", mapGrid);
+            gridGeom.setShadowMode(RenderQueue.ShadowMode.Off);
             Material matGrid = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
             matGrid.setColor("Color", ColorRGBA.Black);
             matGrid.getAdditionalRenderState().setWireframe(true);
@@ -208,9 +215,11 @@ public class Scene {
     
     class Lighting {
         Node lightNode;
+        Vector3f initialDirection;
         DirectionalLight sunLight;
         DirectionalLight moonLight;
         DirectionalLight currentLight;
+        DirectionalLightShadowRenderer dlsr;
         AmbientLight sunAmbient;
         AmbientLight moonAmbient;
         float degrees = 0, degMin = 0, degMax = 180;
@@ -223,6 +232,7 @@ public class Scene {
             degMin = pdegMin;
             degMax = pdegMax;
             degrees = degMin;
+            initialDirection = direction;
             sunLight = new DirectionalLight();
             sunLight.setDirection(direction);
             sunLight.setColor(ColorRGBA.White);
@@ -235,8 +245,14 @@ public class Scene {
             moonAmbient = new AmbientLight();
             moonAmbient.setColor(ColorRGBA.Blue.mult(0.05f));
             
+            final int SHADOWMAP_SIZE=2048;
+            dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);  
+            dlsr.setLight(sunLight);
+            viewPort.addProcessor(dlsr); 
+
             rootNode.addLight(sunLight);
             rootNode.addLight(sunAmbient);
+            rootNode.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
             currentLight = sunLight;
         }
         
@@ -267,16 +283,20 @@ public class Scene {
                 isDay = false;
                 rootNode.removeLight(sunLight);
                 rootNode.removeLight(sunAmbient);
+                moonLight.setDirection(initialDirection);
                 rootNode.addLight(moonLight);
                 rootNode.addLight(moonAmbient);
+                dlsr.setLight(moonLight);
                 currentLight = moonLight;
             }
             else {
                 isDay = true;
                 rootNode.removeLight(moonLight);
                 rootNode.removeLight(moonAmbient);
+                sunLight.setDirection(initialDirection);
                 rootNode.addLight(sunLight);
                 rootNode.addLight(sunAmbient);
+                dlsr.setLight(sunLight);
                 currentLight = sunLight;
             }
         }

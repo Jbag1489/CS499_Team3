@@ -44,10 +44,10 @@ public class Application extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         sim = new Simulation(20, 10, 0.4, 0.25, 0.2, 6545);
-        scene = new Scene(sim, rootNode, assetManager);
+        scene = new Scene(sim, rootNode, assetManager, viewPort);
         panCam = new PanCamera(cam, inputManager, getFlyByCamera());
         panCam.register();
-        timeSinceLastFrame = 0;
+        timeSinceLastFrame = 0; 
 
         /* Josh Test Addition */
         startScreen = new MyStartScreen();
@@ -74,7 +74,7 @@ public class Application extends SimpleApplication {
     public void simpleUpdate(float tpf) {
         
         this.simPaused = startScreen.simPaused;
-        this.timeAcceleration = startScreen.simSpeed;
+        this.timeAcceleration = startScreen.simSpeed + 10;
         
         //Fun code to compute which simulation timestep should be rendered at which alpha
         if (!simPaused) {
