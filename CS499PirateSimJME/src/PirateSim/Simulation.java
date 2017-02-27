@@ -53,6 +53,19 @@ class Simulation {
         probNewShip[PATROL] = cProbNewPatrol;
         rand = new Random(seed);
     }
+    
+    void setProbCargo(double newProb){
+        probNewShip[CARGO] = newProb;
+    }
+    
+    void setProbPatrol(double newProb){
+        probNewShip[PATROL] = newProb;
+    }
+    
+    void setProbPirate(double newProb){
+        probNewShip[PIRATE] = newProb;
+    }
+    
     /** * Updates the simulation, the time increment is nominally five minutes. */
     void tick() {
         for(int i = 0; i < cells.length; i++) {
@@ -71,9 +84,9 @@ class Simulation {
         for (Ship ship : ships) ship.doCapAndResc();
         timeStep++;
     }
-    /** * Gets the amount of time that has elapsed since the simulation started.
+    /** * Gets the number of days that have elapsed since the simulation started.
      * @return the elapsed time */
-    Date getElapsedTime() {return new Date(0, 0, 0, 0, timeStep*5);}
+    float getElapsedDays(float alpha) {return 5/(60*24)*(timeStep + alpha);}
 
     /** * Represents a ship in the simulation. */
     class Ship {
