@@ -7,31 +7,61 @@
     <useControls filename="nifty-default-controls.xml" />
     
     <screen id="hud" controller="PirateSim.MyStartScreen">
+        <!--
         <layer id="background" childLayout="center">
             <image filename="Interface/tutorial/hud-frame.png" imageMode="resize:40,490,110,170,40,560,40,270,40,560,40,40" width="100%" height="100%"/>
         </layer>
-        
-        <layer id="foreground" backgroundColor="#0000" childLayout="horizontal">
-            <panel id="panel_left" width="80%" height="100%" childLayout="vertical">  
+        -->
+        <layer id="foreground" backgroundColor="#0000" childLayout="vertical">
+            <panel id="top_empty_panel" height ="90%" >
+                
+            </panel>
+            <panel id="bottom_panel_for_controls" width="100%" height="10%" valign="bottom" align="center"
+                   childLayout="center">
+                
+                <panel id="sim_controls" width="100%" height="80%" align="center" valign="top"
+                       childLayout="horizontal">
+                    
+                    <panel id="spacer_to_align_center" width="25%">
+                        
+                    </panel>
+                    
+                    <panel id="pause_button_panel" height="50%" width="10%" valign="center" childLayout="center">
+                        <control name="button" label="Pause Simulation" id="PauseButton" valign="center" 
+                                 visibleToMouse="true"> 
+                            <interact onClick="changePauseState()"/>
+                        </control>     
+                    </panel>
+                    
+                    <panel id="slow_button_panel" height="50%" width="10%" valign="center" childLayout="center">
+                        <control name="button" label="Slow Down" id="SlowButton" valign="center" 
+                                 visibleToMouse="true"> 
+                            <interact onClick="decreaseSpeed()"/>
+                        </control>     
+                    </panel>
+                    
+                    <panel id="speed_display_panel" height="50%" width="10%" valign="center" childLayout="center">
+                        <control id="speedLabel" name="label" text="Sim Speed: 1.0" />
+                    </panel>
+                    
+                    <panel id="fast_button_panel" height="50%" width="10%" valign="center" childLayout="center">
+                        <control name="button" label="Speed Up" id="SpeedUpButton" valign="center" 
+                                 visibleToMouse="true"> 
+                            <interact onClick="increaseSpeed()"/>
+                        </control>     
+                    </panel>
+                    
+                    <panel id="quit_button_panel" height="50%" width="10%" valign="center" childLayout="center">
+                        <control name="button" label="Quit" id="hudQuit"  valign="center"
+                                 visibleToMouse="true"> 
+                            <interact onClick="quitGame()"/>
+                        </control> 
+                    </panel>
+                    
+                </panel>
                 
             </panel>
             
-            <panel id="panel_right" width="20%" height="100%" childLayout="vertical">  
-                
-                <panel id="panel_top_right1" width="100%" height="15%" childLayout="center">
-                    <control name="label" color="#000" text="123" width="100%" height="100%" />  
-                </panel>
-                
-                <panel id="panel_top_right2" width="100%" height="15%" childLayout="center">
-                    <image filename="Interface/tutorial/face1.png" 
-                           valign="center" align="center" height="50%" width="30%" >
-                    </image>
-                </panel>
-                
-                <panel id="panel_bot_right" width="100%" height="70%" valign="center">
-                </panel>
-                
-            </panel>
         </layer>
     </screen>
     

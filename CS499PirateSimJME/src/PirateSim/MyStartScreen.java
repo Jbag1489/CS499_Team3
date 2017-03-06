@@ -11,7 +11,6 @@ import com.jme3.app.state.AppStateManager;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.NiftyEventSubscriber;
 import de.lessvoid.nifty.controls.Label;
-import de.lessvoid.nifty.controls.TextField;
 import de.lessvoid.nifty.controls.Slider;
 import de.lessvoid.nifty.controls.SliderChangedEvent;
 import de.lessvoid.nifty.screen.Screen;
@@ -21,10 +20,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
 
     private Nifty nifty;
     private Screen screen;
+    private Screen screenHud;
     private SimpleApplication app;
     static Application myApp = new Application();
-    private TextField simSpeedTextField;
-    // Need values for SimSpeed (0 for pause)
     float simSpeed = 1; // ties to timeAcceleration in Application
     boolean simPaused = true; // ties to simPaused in Application
     // Initialize to true, when start is pressed, it will "unpause" 
@@ -32,12 +30,14 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     private Slider cargoProb;
     private Slider patrolProb;
     private Slider pirateProb;
-    private TextField textField;
-    
+    private int speedIndex = 0;
+    private float[] simSpeeds;
+    private Label simSpeedLabel;
+//    private Button slowButton;
+//    private Button fastButton;
     Label cargoLabel;
     Label patrolLabel;
     Label pirateLabel;
-    
     String cargoLabelText;
     String patrolLabelText;
     String pirateLabelText;
@@ -46,24 +46,38 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * custom methods
      */
     public void startGame(String nextScreen) {
-
-        // Get simulation speed from text box
-        String text = textField.getDisplayedText();
-        System.out.println(text);
         nifty.gotoScreen(nextScreen);  // switch to another screen
         simPaused = false; // Will start running the simulation
     }
 
-    /*
-     * Not yet implemented, but this works to update the labels
-     */
-    public void updateLabel() {
-        Label label = screen.findNiftyControl("simSpeedLabel", Label.class);
-        label.setText("the text updated");
-    }
-
     public void quitGame() {
         myApp.stop();
+    }
+
+    public void increaseSpeed() {
+        if(speedIndex+1 == simSpeeds.length){
+            // Do nothing
+        }
+        else{
+            speedIndex++;
+            simSpeed = simSpeeds[speedIndex];
+            updateSpeedLabel();
+            
+        }
+    }
+
+    public void decreaseSpeed() {
+        if (speedIndex == 0) {
+            // Do nothing
+        } else {
+            speedIndex--;
+            simSpeed = simSpeeds[speedIndex];
+            updateSpeedLabel();
+        }
+    }
+    
+    public float getSimSpeed(){
+        return simSpeed;
     }
 
     public MyStartScreen() {
@@ -94,6 +108,13 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
 
     public void onEndScreen() {
     }
+    
+    private void updateSpeedLabel(){
+        String speedLabelText = "Sim Speed: " + simSpeeds[speedIndex];
+        System.out.println("Sim speed changed to " + 
+                String.format("%.1f", simSpeeds[speedIndex]));
+        simSpeedLabel.setText(speedLabelText);
+    }
 
     /**
      * jME3 AppState methods
@@ -102,21 +123,34 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
         myApp = (SimpleApplication) app;
+        
+        screenHud = nifty.getScreen("hud");
+        
+        // Initialize array of speeds
+        simSpeeds = new float[4];
+        simSpeeds[0] = (float) 1.0;
+        simSpeeds[1] = (float) 2.0;
+        simSpeeds[2] = (float) 5.0;
+        simSpeeds[3] = (float) 10.0;
+
+        // Initialize simulation to 1x speed.
+        speedIndex = 0;
 
         // Create objects for XML Controls
         cargoProb = screen.findNiftyControl("cargoSlider", Slider.class);
         patrolProb = screen.findNiftyControl("patrolSlider", Slider.class);
         pirateProb = screen.findNiftyControl("pirateSlider", Slider.class);
-        textField = screen.findNiftyControl("simSpeedTextField", TextField.class);
-        
+
         cargoLabel = screen.findNiftyControl("cargoSliderLabel", Label.class);
         patrolLabel = screen.findNiftyControl("patrolSliderLabel", Label.class);
         pirateLabel = screen.findNiftyControl("pirateSliderLabel", Label.class);
-        
+        simSpeedLabel = screenHud.findNiftyControl("speedLabel", Label.class);
+
         // Initilize string representations of labels
         cargoLabelText = "Cargo Probability: " + String.format("%.2f", cargoProb.getValue());
         patrolLabelText = "Patrol Probability: " + String.format("%.2f", patrolProb.getValue());
         pirateLabelText = "Pirate Probability: " + String.format("%.2f", pirateProb.getValue());
+        
 
         // Initialize Slider values
         cargoProb.setMax((float) 1.00);
@@ -156,13 +190,13 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         cargoLabelText = "Cargo Probability: " + String.format("%.2f", cargoProb.getValue());
         cargoLabel.setText(cargoLabelText);
     }
-    
+
     @NiftyEventSubscriber(id = "patrolSlider")
     public void onPatrolSliderChangedEvent(String id, SliderChangedEvent event) {
         patrolLabelText = "Patrol Probability: " + String.format("%.2f", patrolProb.getValue());
         patrolLabel.setText(patrolLabelText);
     }
-    
+
     @NiftyEventSubscriber(id = "pirateSlider")
     public void onPirateSliderChangedEvent(String id, SliderChangedEvent event) {
         pirateLabelText = "Pirate Probability: " + String.format("%.2f", pirateProb.getValue());

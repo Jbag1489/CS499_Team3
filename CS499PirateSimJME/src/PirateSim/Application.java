@@ -79,7 +79,7 @@ public class Application extends SimpleApplication {
         if (!startScreen.simPaused) {
             timeSinceLastTick += tpf;
             timeSinceLastFrame += tpf;
-            float simSpeed = 1;//startScreen.simSpeed;
+            float simSpeed = startScreen.getSimSpeed();
             //continue ticking the simulation until timeSinceLastTick is less than the length of a tick (1/timeAcceleration, since ticks are one second each).
             while (timeSinceLastTick > 1/simSpeed) {
                 sim.tick();
