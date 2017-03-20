@@ -16,3 +16,9 @@ CS499PirateSimJME/nbproject/build-impl.xml
 *.netbeans_update_resources
 *.properties
 >>>>>>> master
+
+CS499PirateSimJME/assets/Interface/tutorial/face1\.png
+
+CS499PirateSimJME/assets/Interface/tutorial/hud-frame\.png
+
+CS499PirateSimJME/assets/Interface/tutorial/start-background\.png
