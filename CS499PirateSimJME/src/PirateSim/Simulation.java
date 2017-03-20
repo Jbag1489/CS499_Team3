@@ -84,10 +84,13 @@ class Simulation {
         for (Ship ship : ships) ship.doCapAndResc();
         timeStep++;
     }
-    /** * Gets the number of days that have elapsed since the simulation started.
-     * @return the elapsed time */
+    /** * Gets the decimal number of days that have elapsed since the simulation started.
+     * @return the decimal elapsed time */
     float getElapsedDays(float alpha) {return 5/(60*24)*(timeStep + alpha);}
-
+    /** * Gets the integer number of days, hours, and minuts that have elapsed since the simulation started.
+     * @return the integer elapsed time */
+    TimeInterval getElapsedTime(float alpha) {return new TimeInterval(getElapsedDays(alpha));}
+    
     /** * Represents a ship in the simulation. */
     class Ship {
         /** * The ship's position relative to the South Western corner of the grid. */
@@ -290,5 +293,21 @@ class Simulation {
         }
         for(int i = 0; i < cells.length; i++) System.out.print("__");
         System.out.print("\n\t");
+    }
+    
+    /** * Represents a time interval in days, hours, and minutes. **/
+    class TimeInterval {
+        int days;
+        int hours;
+        int minutes;
+        
+        /** * Create a TimeInterval object.
+         * @param pDays the decimal number of days that have elapsed. */
+        TimeInterval(float pDays) {
+            days = (int) pDays;
+            float fHours = (pDays - days)*24;
+            hours = (int) hours;
+            minutes = (int) ((fHours - hours)*60);
+        }
     }
 }

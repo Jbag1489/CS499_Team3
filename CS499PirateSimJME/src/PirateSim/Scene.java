@@ -9,10 +9,12 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Transform;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Spatial;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.texture.Texture;
 import com.jme3.scene.Node;
 import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.debug.Arrow;
@@ -87,20 +89,20 @@ public class Scene {
     //This class renders the boats, called boats instead of ships to differentiate it from Simulation.Ship
     class Boats {
         //these arrays track the properties of each type of boat
-        Mesh meshes[];
+        Spatial models[];
         Material mats[];
         Vector3f centers[]; //the position within a cell of the boat's center
         Node shipNode; //node in the scenegraph that all boat nodes live under
         
         //initialize meshes, materials, and center postions for each type of boat
         Boats() {
-            meshes = new Box[Simulation.NUM_SHIP_TYPES];
+            models = new Spatial[Simulation.NUM_SHIP_TYPES];
             mats = new Material[Simulation.NUM_SHIP_TYPES];
             centers = new Vector3f[Simulation.NUM_SHIP_TYPES];
             
             generateBoatType(Simulation.CARGO,          new Box(0.5f, 0.2f, 0.5f), ColorRGBA.White, 0f, 0.25f);
             generateBoatType(Simulation.CAPTURED,       new Box(0.5f, 0.2f, 0.49f), ColorRGBA.Orange, -0.35f, -0.1f);
-            generateBoatType(Simulation.PATROL,         new Box(0.5f, 0.2f, 0.4f), ColorRGBA.Green, 0f, -0.25f);
+            generateBoatType(Simulation.PATROL,         new Box(0.5f, 0.2f, 0.4f), ColorRGBA.Green, 0f, 0.0f);
             generateBoatType(Simulation.PIRATE,         new Box(0.2f, 0.2f, 0.3f), ColorRGBA.Black, 0f, 0f);
             generateBoatType(Simulation.ESCORTPIRATE,   new Box(0.2f, 0.2f, 0.29f), ColorRGBA.DarkGray, 0.4f, 0f);
             generateBoatType(Simulation.WRECK,          new Box(0.2f, 0.2f, 0.28f), ColorRGBA.Red, -0.05f, -0.75f);
@@ -111,12 +113,47 @@ public class Scene {
         }
         //Convenience function to generate boat meshes etc. 
         final void generateBoatType(int type, Mesh mesh, ColorRGBA color, float centerX, float centerY) {
-            meshes[type] = mesh;
-            mats[type] = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
-            mats[type].setColor("Ambient", color);
-            mats[type].setColor("Diffuse", color);
-            mats[type].setBoolean("UseMaterialColors",true);
-            centers[type] = new Vector3f(centerX, centerY, 0);
+            if (type == Simulation.PATROL) {
+                    models[type] = assetMan.loadModel("Models/patrol/patrol.j3o");
+                    mats[type] = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
+                    mats[type].setTexture("ColorMap",assetMan.loadTexture("Textures/uv grid.png"));
+                    centers[type] = new Vector3f(centerX, centerY, 0);
+//                    Texture cube1Tex = assetMan.loadTexture("Interface/tutorial/start-background.png");
+//                    mats[type].setTexture("DiffuseMap", cube1Tex);
+//                    mats[type].setBoolean("UseMaterialColors", true);
+//                    mats[type].setColor("Diffuse",ColorRGBA.White);
+//                    mats[type].setColor("Specular",ColorRGBA.White);
+//                    mats[type].setFloat("Shininess", 64f);  // [0,128]
+            } else if (type == Simulation.CARGO || type == Simulation.CAPTURED) {
+                    models[type] = assetMan.loadModel("Models/cargo/cargo.j3o");
+                    mats[type] = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
+                    mats[type].setTexture("ColorMap",assetMan.loadTexture("Textures/uv grid.png"));
+                    centers[type] = new Vector3f(centerX, centerY, 0);
+//                    Texture cube1Tex = assetMan.loadTexture("Interface/tutorial/start-background.png");
+//                    mats[type].setTexture("DiffuseMap", cube1Tex);
+//                    mats[type].setBoolean("UseMaterialColors", true);
+//                    mats[type].setColor("Diffuse",ColorRGBA.White);
+//                    mats[type].setColor("Specular",ColorRGBA.White);
+//                    mats[type].setFloat("Shininess", 64f);  // [0,128]
+            } else if (type == Simulation.PIRATE || type == Simulation.ESCORTPIRATE || type == Simulation.WRECK) {
+                    models[type] = assetMan.loadModel("Models/pirate/pirate.j3o");
+                    mats[type] = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
+                    mats[type].setTexture("ColorMap",assetMan.loadTexture("Textures/uv grid.png"));
+                    centers[type] = new Vector3f(centerX, centerY, 0);
+//                    Texture cube1Tex = assetMan.loadTexture("Interface/tutorial/start-background.png");
+//                    mats[type].setTexture("DiffuseMap", cube1Tex);
+//                    mats[type].setBoolean("UseMaterialColors", true);
+//                    mats[type].setColor("Diffuse",ColorRGBA.White);
+//                    mats[type].setColor("Specular",ColorRGBA.White);
+//                    mats[type].setFloat("Shininess", 64f);  // [0,128]
+            
+            } else {
+                models[type] = new Geometry("boat", mesh);
+                mats[type] = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
+                centers[type] = new Vector3f(centerX, centerY, 0);
+                mats[type].setColor("Ambient", color);
+                mats[type].setColor("Diffuse", color);
+            }
         }
         //updates the positions of boat nodes in scenegraph based on the current state of sim.ships
         //alpha is the amount of time since the last tick, alpha = 1 is the next tick
@@ -124,14 +161,13 @@ public class Scene {
             shipNode.detachAllChildren();
             for (Simulation.Ship ship : sim.ships) {
                 Simulation.Ship visualShip = ship.previousStates.get(ship.previousStates.size() - 2);
-                Mesh boatMesh = meshes[visualShip.type];
+                Spatial boatModel = models[visualShip.type].clone();
                 Material matBoat = mats[visualShip.type];
-                Geometry boatGeo = new Geometry("boat", boatMesh);
-                boatGeo.setMaterial(matBoat);
-                shipNode.attachChild(boatGeo);
+                boatModel.setMaterial(matBoat);
+                shipNode.attachChild(boatModel);
                 
                 Transform transform = interpolateShipTransform(ship, alpha);
-                boatGeo.getLocalTransform().set(transform);
+                boatModel.getLocalTransform().set(transform);
             }
         }
         //returns the interpolated transform (heading and position in this case) of the given ship at time alpha
@@ -157,10 +193,9 @@ public class Scene {
                 delta = delta.mult(-1f);
             }
             Quaternion rotation = new Quaternion().fromAngleAxis(FastMath.atan2(delta.y, delta.x), Vector3f.UNIT_Z);
+            translation.x = (int) translation.x;
+            translation.y = (int) translation.y;
             return new Transform(translation, rotation);
-            
-            //return FastMath.interpolateLinear(alpha, sampleShipPos(ship, 1), sampleShipPos(ship, 0));
-            //return sampleShipPos(ship, 0);
         }
         //samples the ships position from the previousStates arrayList at the current time minus tMinus.
         Vector3f sampleShipPos(Simulation.Ship ship, int tMinus) {
@@ -192,7 +227,6 @@ public class Scene {
             mat.setBoolean("UseMaterialColors",true);
             seaGeom.setMaterial(mat);
             seaGeom.center().getLocalTranslation().set(-SEA_BORDER_SIZE, -SEA_BORDER_SIZE, 0f);
-
             Grid mapGrid = new Grid(sim.size.y + 1, sim.size.x + 1, 1);
             Geometry gridGeom = new Geometry("Grid", mapGrid);
             gridGeom.setShadowMode(RenderQueue.ShadowMode.Off);
