@@ -92,10 +92,7 @@ public class Application extends SimpleApplication {
             timeSinceLastFrame = 0;
             float simSpeed = startScreen.getSimSpeed();
             //continue ticking the simulation until timeSinceLastTick is less than the length of a tick (1/timeAcceleration, since ticks are one second each).
-            while (timeSinceLastTick > 1/simSpeed) {
-                sim.tick();
-                timeSinceLastTick -= 1/simSpeed;
-            }
+            sim.tick();
             float alpha = timeSinceLastTick*simSpeed;
             //update the scene now that the simulation state is correct and alpha has been found
             scene.update(alpha);

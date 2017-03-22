@@ -57,14 +57,11 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      */
     public void startGame(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
-        // Simulation(int xSize, int ySize, double cProbNewCargo, double cProbNewPirate, double cProbNewPatrol, long seed)
-        
-        
+        // Simulation(int xSize, int ySize, double cProbNewCargo, double cProbNewPirate, double cProbNewPatrol, long seed)        
         simStartScreen = new Simulation((int)simWidth.getValue(), (int)simHeight.getValue(),
                 (double)cargoProb.getValue(), (double)pirateProb.getValue(), 
                 (double)patrolProb.getValue(), seed);
-        
-        
+                
         simPaused = false; // Will start running the simulation
     }
 
@@ -74,19 +71,18 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
 
     public void increaseSpeed() {
         if(speedIndex+1 == simSpeeds.length){
-            // Do nothing
+            // Speed is at maximum, so do nothing
         }
         else{
             speedIndex++;
             simSpeed = simSpeeds[speedIndex];
             updateSpeedLabel();
-            
         }
     }
 
     public void decreaseSpeed() {
         if (speedIndex == 0) {
-            // Do nothing
+            // Speed is at minimum, so do nothing
         } else {
             speedIndex--;
             simSpeed = simSpeeds[speedIndex];
@@ -102,10 +98,10 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         /**
          * Your custom constructor, can accept arguments
          */
-        
+        /*
         this.simStartScreen = sim;
         this.seed = sim.seed;
-        
+        */
     }
 
     public void changePauseState() {
