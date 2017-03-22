@@ -23,30 +23,48 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     private Screen screenHud;
     private SimpleApplication app;
     static Application myApp = new Application();
+    Simulation simStartScreen;
+    long seed;
     float simSpeed = 1; // ties to timeAcceleration in Application
     boolean simPaused = true; // ties to simPaused in Application
     // Initialize to true, when start is pressed, it will "unpause" 
     // Objects for XML Control
+    int width = 20;
+    int height = 10;
+    private Slider simWidth;
+    private Slider simHeight;
     private Slider cargoProb;
     private Slider patrolProb;
     private Slider pirateProb;
     private int speedIndex = 0;
     private float[] simSpeeds;
     private Label simSpeedLabel;
-//    private Button slowButton;
-//    private Button fastButton;
     Label cargoLabel;
     Label patrolLabel;
     Label pirateLabel;
+    Label widthLabel;
+    Label heightLabel;
     String cargoLabelText;
     String patrolLabelText;
     String pirateLabelText;
+    String witdthSliderLabelText;
+    String heightSliderLabelText;
+    
+    boolean singleTick = false;
 
     /**
      * custom methods
      */
     public void startGame(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
+        // Simulation(int xSize, int ySize, double cProbNewCargo, double cProbNewPirate, double cProbNewPatrol, long seed)
+        
+        
+        simStartScreen = new Simulation((int)simWidth.getValue(), (int)simHeight.getValue(),
+                (double)cargoProb.getValue(), (double)pirateProb.getValue(), 
+                (double)patrolProb.getValue(), seed);
+        
+        
         simPaused = false; // Will start running the simulation
     }
 
@@ -80,10 +98,14 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         return simSpeed;
     }
 
-    public MyStartScreen() {
+    public MyStartScreen( Simulation sim ) {
         /**
          * Your custom constructor, can accept arguments
          */
+        
+        this.simStartScreen = sim;
+        this.seed = sim.seed;
+        
     }
 
     public void changePauseState() {
@@ -115,6 +137,13 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
                 String.format("%.1f", simSpeeds[speedIndex]));
         simSpeedLabel.setText(speedLabelText);
     }
+    
+    public void advanceSingleTick(){
+        
+        simPaused = true;
+        singleTick = true;
+        simStartScreen.tick();
+    }
 
     /**
      * jME3 AppState methods
@@ -137,10 +166,16 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         speedIndex = 0;
 
         // Create objects for XML Controls
+        simWidth = screen.findNiftyControl("widthSlider", Slider.class);
+        simHeight = screen.findNiftyControl("heightSlider", Slider.class);
+        
         cargoProb = screen.findNiftyControl("cargoSlider", Slider.class);
         patrolProb = screen.findNiftyControl("patrolSlider", Slider.class);
         pirateProb = screen.findNiftyControl("pirateSlider", Slider.class);
 
+        widthLabel = screen.findNiftyControl("widthSliderLabel", Label.class);
+        heightLabel = screen.findNiftyControl("heightSliderLabel", Label.class);
+        
         cargoLabel = screen.findNiftyControl("cargoSliderLabel", Label.class);
         patrolLabel = screen.findNiftyControl("patrolSliderLabel", Label.class);
         pirateLabel = screen.findNiftyControl("pirateSliderLabel", Label.class);
@@ -150,6 +185,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         cargoLabelText = "Cargo Probability: " + String.format("%.2f", cargoProb.getValue());
         patrolLabelText = "Patrol Probability: " + String.format("%.2f", patrolProb.getValue());
         pirateLabelText = "Pirate Probability: " + String.format("%.2f", pirateProb.getValue());
+        
+        witdthSliderLabelText = "Sim width: " + width;
+        heightSliderLabelText = "Sim height: " + height;
         
 
         // Initialize Slider values
@@ -170,6 +208,18 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         pirateProb.setStepSize((float) .05);
         pirateProb.setValue((float) 0.25);
         pirateProb.setButtonStepSize((float) 0.05);
+        
+        simWidth.setMax((float) 400);
+        simWidth.setMin((float) 10);
+        simWidth.setStepSize((float) 10);
+        simWidth.setValue((float) 20);
+        simWidth.setButtonStepSize((float) 10);
+        
+        simHeight.setMax((float) 100);
+        simHeight.setMin((float) 10);
+        simHeight.setStepSize((float) 10);
+        simHeight.setValue((float) 10);
+        simHeight.setButtonStepSize((float) 10);
 
     }
 
@@ -202,7 +252,29 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         pirateLabelText = "Pirate Probability: " + String.format("%.2f", pirateProb.getValue());
         pirateLabel.setText(pirateLabelText);
     }
+    
+    @NiftyEventSubscriber(id = "widthSlider")
+    public void onWidthSliderChangedEvent(String id, SliderChangedEvent event) {
+        width = (int)simWidth.getValue();
+        witdthSliderLabelText = "Sim width: " + width;
+        widthLabel.setText(witdthSliderLabelText);
+    }
+    
+    @NiftyEventSubscriber(id = "heightSlider")
+    public void onHeightSliderChangedEvent(String id, SliderChangedEvent event) {
+        height = (int)simHeight.getValue();
+        witdthSliderLabelText = "Sim height: " + height;
+        heightLabel.setText(witdthSliderLabelText);
+    }
 
+    int getWidth(){
+        return width;
+    }
+    
+    int getHeight(){
+        return height;
+    }
+    
     @Override
     public void update(float tpf) {
         /**

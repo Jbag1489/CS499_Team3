@@ -27,7 +27,7 @@ import com.jme3.shadow.DirectionalLightShadowRenderer;
  */
 public class Scene {
     AssetManager assetMan;
-    Simulation sim;
+    Simulation simScene;
     ViewPort viewPort;
     Node rootNode;
     Boats boats;
@@ -36,7 +36,7 @@ public class Scene {
     static final int SEA_BORDER_SIZE = 6;
     
     Scene(Simulation pSim, Node pRootNode, AssetManager pAssetMan, ViewPort pViewPort) {
-        sim = pSim;
+        simScene = pSim;
         rootNode = pRootNode;
         assetMan = pAssetMan;
         viewPort = pViewPort;
@@ -122,7 +122,7 @@ public class Scene {
         //alpha is the amount of time since the last tick, alpha = 1 is the next tick
         void update(float alpha) {
             shipNode.detachAllChildren();
-            for (Simulation.Ship ship : sim.ships) {
+            for (Simulation.Ship ship : simScene.ships) {
                 Simulation.Ship visualShip = ship.previousStates.get(ship.previousStates.size() - 2);
                 Mesh boatMesh = meshes[visualShip.type];
                 Material matBoat = mats[visualShip.type];
@@ -182,9 +182,9 @@ public class Scene {
         
         //creates map grid, quad for the sea, TODO terrain
         Background() {
-            createAxisReference();
+            //createAxisReference();
             
-            Quad ground = new Quad(sim.size.x + SEA_BORDER_SIZE*2, sim.size.y + SEA_BORDER_SIZE*2);
+            Quad ground = new Quad(simScene.size.x + SEA_BORDER_SIZE*2, simScene.size.y + SEA_BORDER_SIZE*2);
             Geometry seaGeom = new Geometry("Quad", ground);
             Material mat = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
             mat.setColor("Ambient", ColorRGBA.Blue);
@@ -193,14 +193,14 @@ public class Scene {
             seaGeom.setMaterial(mat);
             seaGeom.center().getLocalTranslation().set(-SEA_BORDER_SIZE, -SEA_BORDER_SIZE, 0f);
 
-            Grid mapGrid = new Grid(sim.size.y + 1, sim.size.x + 1, 1);
+            Grid mapGrid = new Grid(simScene.size.y + 1, simScene.size.x + 1, 1);
             Geometry gridGeom = new Geometry("Grid", mapGrid);
             gridGeom.setShadowMode(RenderQueue.ShadowMode.Off);
             Material matGrid = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
             matGrid.setColor("Color", ColorRGBA.Black);
             matGrid.getAdditionalRenderState().setWireframe(true);
             gridGeom.setMaterial(matGrid);
-            gridGeom.center().getLocalTranslation().set(0.0f, sim.size.y, 0.01f);
+            gridGeom.center().getLocalTranslation().set(0.0f, simScene.size.y, 0.01f);
             gridGeom.getLocalRotation().fromAngles(FastMath.PI/2, 0f, 0f);
 
             backgroundNode = new Node("background");

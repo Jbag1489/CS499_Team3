@@ -27,6 +27,7 @@ class Simulation {
     double probNewShip [];
     /** * The current timestep. */
     int timeStep;
+    long seed;
     private Random rand;
     private int nextID = 0;
     
@@ -51,6 +52,7 @@ class Simulation {
         probNewShip[CARGO] = cProbNewCargo;
         probNewShip[PIRATE] = cProbNewPirate;
         probNewShip[PATROL] = cProbNewPatrol;
+        this.seed = seed;
         rand = new Random(seed);
     }
     

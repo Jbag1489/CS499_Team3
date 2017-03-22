@@ -41,14 +41,14 @@ public class Application extends SimpleApplication {
     //initialize application controlled objects like the simulation state (sim), the scene controller (scene), the camera, the GUI, etc.
     @Override
     public void simpleInitApp() {
-        sim = new Simulation(20, 10, 0.4, 0.25, 0.2, 6545);
+        sim = new Simulation(10, 10, 0.4, 0.25, 0.2, 6545);
         scene = new Scene(sim, rootNode, assetManager, viewPort);
         panCam = new PanCamera(cam, inputManager, getFlyByCamera());
         panCam.register();
         timeSinceLastFrame = 0; 
 
         /* Josh Test Addition */
-        startScreen = new MyStartScreen();
+        startScreen = new MyStartScreen( sim );
         stateManager.attach(startScreen);
 
         /**
@@ -62,10 +62,7 @@ public class Application extends SimpleApplication {
         //nifty.setDebugOptionPanelColors(true);
 
         //Note to Josh: panCamera is currently controlling FlyCam and sets this value.
-        //flyCam.setDragToRotate(true); // you need the mouse for clicking now 
-        
-        /* Josh Test Addition End */
-        
+        //flyCam.setDragToRotate(true); // you need the mouse for clicking now       
     }
 
     //Per frame update function
@@ -88,6 +85,22 @@ public class Application extends SimpleApplication {
             float alpha = timeSinceLastTick*simSpeed;
             //update the scene now that the simulation state is correct and alpha has been found
             scene.update(alpha);
+        }
+        
+        if (startScreen.singleTick) {
+            timeSinceLastTick = 0;
+            timeSinceLastFrame = 0;
+            float simSpeed = startScreen.getSimSpeed();
+            //continue ticking the simulation until timeSinceLastTick is less than the length of a tick (1/timeAcceleration, since ticks are one second each).
+            while (timeSinceLastTick > 1/simSpeed) {
+                sim.tick();
+                timeSinceLastTick -= 1/simSpeed;
+            }
+            float alpha = timeSinceLastTick*simSpeed;
+            //update the scene now that the simulation state is correct and alpha has been found
+            scene.update(alpha);
+            
+            startScreen.singleTick = false;
         }
     }
     
