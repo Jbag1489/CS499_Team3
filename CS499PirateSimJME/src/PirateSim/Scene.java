@@ -38,7 +38,7 @@ import com.jme3.texture.Texture2D;
  */
 public class Scene {
     AssetManager assetMan;
-    Simulation sim;
+    Simulation simScene;
     ViewPort viewPort;
     Node rootNode;
     Boats boats;
@@ -47,7 +47,7 @@ public class Scene {
     static final int SEA_BORDER_SIZE = 6;
     
     Scene(Simulation pSim, Node pRootNode, AssetManager pAssetMan, ViewPort pViewPort) {
-        sim = pSim;
+        simScene = pSim;
         rootNode = pRootNode;
         assetMan = pAssetMan;
         viewPort = pViewPort;
@@ -168,7 +168,7 @@ public class Scene {
         //alpha is the amount of time since the last tick, alpha = 1 is the next tick
         void update(float alpha) {
             shipNode.detachAllChildren();
-            for (Simulation.Ship ship : sim.ships) {
+            for (Simulation.Ship ship : simScene.ships) {
                 Simulation.Ship visualShip = ship.previousStates.get(ship.previousStates.size() - 2);
                 Spatial boatModel = models[visualShip.type].clone();
                 Material matBoat = mats[visualShip.type];

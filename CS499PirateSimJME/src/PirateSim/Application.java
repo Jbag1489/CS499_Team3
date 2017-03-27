@@ -46,7 +46,7 @@ public class Application extends SimpleApplication {
         panCam.register();
         timeSinceLastFrame = 0;
         /* Josh Test Addition */
-        startScreen = new MyStartScreen();
+        startScreen = new MyStartScreen( sim );
         stateManager.attach(startScreen);
 
         /**
@@ -60,10 +60,7 @@ public class Application extends SimpleApplication {
         //nifty.setDebugOptionPanelColors(true);
 
         //Note to Josh: panCamera is currently controlling FlyCam and sets this value.
-        //flyCam.setDragToRotate(true); // you need the mouse for clicking now 
-        
-        /* Josh Test Addition End */
-        
+        //flyCam.setDragToRotate(true); // you need the mouse for clicking now       
     }
     
     void setSim(Simulation pSim) {
@@ -100,6 +97,19 @@ public class Application extends SimpleApplication {
             float alpha = timeSinceLastTick*simSpeed;
             //update the scene now that the simulation state is correct and alpha has been found
             scene.update(alpha);
+        }
+        
+        if (startScreen.singleTick) {
+            timeSinceLastTick = 0;
+            timeSinceLastFrame = 0;
+            float simSpeed = startScreen.getSimSpeed();
+            //continue ticking the simulation until timeSinceLastTick is less than the length of a tick (1/timeAcceleration, since ticks are one second each).
+            sim.tick();
+            float alpha = timeSinceLastTick*simSpeed;
+            //update the scene now that the simulation state is correct and alpha has been found
+            scene.update(alpha);
+            
+            startScreen.singleTick = false;
         }
     }
     
