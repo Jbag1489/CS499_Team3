@@ -22,6 +22,15 @@ import com.jme3.scene.debug.Grid;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
+import com.jme3.water.WaterFilter;
+
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.BloomFilter;
+
+import com.jme3.post.filters.CartoonEdgeFilter;
+import com.jme3.post.filters.DepthOfFieldFilter;
+import com.jme3.post.filters.LightScatteringFilter;
+import com.jme3.texture.Texture2D;
 
 /**
  * Class to create a JME scenegraph for a given simulation state.
@@ -116,7 +125,7 @@ public class Scene {
             if (type == Simulation.PATROL) {
                     models[type] = assetMan.loadModel("Models/patrol/patrol.j3o");
                     mats[type] = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
-                    mats[type].setTexture("ColorMap",assetMan.loadTexture("Textures/uv grid.png"));
+                    mats[type].setTexture("ColorMap",assetMan.loadTexture("Textures/uvGrid.jpg"));
                     centers[type] = new Vector3f(centerX, centerY, 0);
 //                    Texture cube1Tex = assetMan.loadTexture("Interface/tutorial/start-background.png");
 //                    mats[type].setTexture("DiffuseMap", cube1Tex);
@@ -127,7 +136,7 @@ public class Scene {
             } else if (type == Simulation.CARGO || type == Simulation.CAPTURED) {
                     models[type] = assetMan.loadModel("Models/cargo/cargo.j3o");
                     mats[type] = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
-                    mats[type].setTexture("ColorMap",assetMan.loadTexture("Textures/uv grid.png"));
+                    mats[type].setTexture("ColorMap",assetMan.loadTexture("Textures/uvGrid.jpg"));
                     centers[type] = new Vector3f(centerX, centerY, 0);
 //                    Texture cube1Tex = assetMan.loadTexture("Interface/tutorial/start-background.png");
 //                    mats[type].setTexture("DiffuseMap", cube1Tex);
@@ -135,10 +144,10 @@ public class Scene {
 //                    mats[type].setColor("Diffuse",ColorRGBA.White);
 //                    mats[type].setColor("Specular",ColorRGBA.White);
 //                    mats[type].setFloat("Shininess", 64f);  // [0,128]
-            } else if (type == Simulation.PIRATE || type == Simulation.ESCORTPIRATE || type == Simulation.WRECK) {
+            } else if (type == Simulation.PIRATE || type == Simulation.ESCORTPIRATE || type == Simulation.WRECK || type == Simulation.ESCORTWRECK ) {
                     models[type] = assetMan.loadModel("Models/pirate/pirate.j3o");
                     mats[type] = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
-                    mats[type].setTexture("ColorMap",assetMan.loadTexture("Textures/uv grid.png"));
+                    mats[type].setTexture("ColorMap",assetMan.loadTexture("Textures/uvGrid.jpg"));
                     centers[type] = new Vector3f(centerX, centerY, 0);
 //                    Texture cube1Tex = assetMan.loadTexture("Interface/tutorial/start-background.png");
 //                    mats[type].setTexture("DiffuseMap", cube1Tex);
@@ -167,6 +176,7 @@ public class Scene {
                 shipNode.attachChild(boatModel);
                 
                 Transform transform = interpolateShipTransform(ship, alpha);
+                transform.getRotation().fromAngles(-90, 0, 0);
                 boatModel.getLocalTransform().set(transform);
             }
         }
@@ -193,9 +203,8 @@ public class Scene {
                 delta = delta.mult(-1f);
             }
             Quaternion rotation = new Quaternion().fromAngleAxis(FastMath.atan2(delta.y, delta.x), Vector3f.UNIT_Z);
-            translation.x = (int) translation.x;
-            translation.y = (int) translation.y;
-            return new Transform(translation, rotation);
+            //translation.x = (int) translation.x; translation.y = (int) translation.y;
+            return new Transform(new Vector3f(translation.x, 0, translation.y), rotation);
         }
         //samples the ships position from the previousStates arrayList at the current time minus tMinus.
         Vector3f sampleShipPos(Simulation.Ship ship, int tMinus) {
@@ -214,10 +223,44 @@ public class Scene {
      */
     class Background {
         Node backgroundNode;
+        WaterFilter water;
         
         //creates map grid, quad for the sea, TODO terrain
         Background() {
-            createAxisReference();
+
+        Vector3f lightDir = new Vector3f(1, -1, 0);
+
+            water = new WaterFilter(rootNode, lightDir);
+
+            FilterPostProcessor fpp = new FilterPostProcessor(assetMan);
+
+            fpp.addFilter(water);
+
+    //        LightScatteringFilter lsf = new LightScatteringFilter(lightDir.mult(-300));
+    //        lsf.setLightDensity(1.0f);
+    //        fpp.addFilter(lsf);
+    //        
+
+            //   fpp.addFilter(new TranslucentBucketFilter());
+            //       
+
+            // fpp.setNumSamples(4);
+
+
+            water.setWaveScale(0.003f);
+            water.setMaxAmplitude(2f);
+            water.setFoamExistence(new Vector3f(1f, 4, 0.5f));
+            water.setFoamTexture((Texture2D) assetMan.loadTexture("Common/MatDefs/Water/Textures/foam2.jpg"));
+            //water.setNormalScale(0.5f);
+
+            //water.setRefractionConstant(0.25f);
+            water.setRefractionStrength(0.2f);
+            //water.setFoamHardness(0.6f);
+
+            water.setWaterHeight(0f);
+
+            viewPort.addProcessor(fpp);
+            
             
             Quad ground = new Quad(sim.size.x + SEA_BORDER_SIZE*2, sim.size.y + SEA_BORDER_SIZE*2);
             Geometry seaGeom = new Geometry("Quad", ground);
@@ -234,12 +277,12 @@ public class Scene {
             matGrid.setColor("Color", ColorRGBA.Black);
             matGrid.getAdditionalRenderState().setWireframe(true);
             gridGeom.setMaterial(matGrid);
-            gridGeom.center().getLocalTranslation().set(0.0f, sim.size.y, 0.01f);
-            gridGeom.getLocalRotation().fromAngles(FastMath.PI/2, 0f, 0f);
+            //gridGeom.center().getLocalTranslation().set(0.0f, 0*sim.size.y, 0.01f);
+            //gridGeom.getLocalRotation().fromAngles(FastMath.PI/2, 0f, 0f);
 
             backgroundNode = new Node("background");
             rootNode.attachChild(backgroundNode);
-            backgroundNode.attachChild(seaGeom);
+            //backgroundNode.attachChild(seaGeom);
             backgroundNode.attachChild(gridGeom);
         }
         void update(float alhpa) {

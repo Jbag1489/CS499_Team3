@@ -25,6 +25,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     static Application myApp = new Application();
     float simSpeed = 1; // ties to timeAcceleration in Application
     boolean simPaused = true; // ties to simPaused in Application
+    boolean singleStep = false;
     // Initialize to true, when start is pressed, it will "unpause" 
     // Objects for XML Control
     private Slider cargoProb;

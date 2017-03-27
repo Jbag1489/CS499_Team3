@@ -11,7 +11,7 @@ import de.lessvoid.nifty.Nifty;
  * Also still under construction so no javadoc for now
  */
 public class Application extends SimpleApplication {
-    Simulation sim;
+    private Simulation sim;
     Scene scene;
     PanCamera panCam; //SimpleApplication's FlyCam is not suitable for this application, so this camera is used
     float timeSinceLastFrame, timeSinceLastTick;
@@ -41,12 +41,10 @@ public class Application extends SimpleApplication {
     //initialize application controlled objects like the simulation state (sim), the scene controller (scene), the camera, the GUI, etc.
     @Override
     public void simpleInitApp() {
-        sim = new Simulation(20, 10, 0.4, 0.25, 0.2, 6545);
-        scene = new Scene(sim, rootNode, assetManager, viewPort);
+        setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, 6545));
         panCam = new PanCamera(cam, inputManager, getFlyByCamera());
         panCam.register();
-        timeSinceLastFrame = 0; 
-
+        timeSinceLastFrame = 0;
         /* Josh Test Addition */
         startScreen = new MyStartScreen();
         stateManager.attach(startScreen);
@@ -67,6 +65,13 @@ public class Application extends SimpleApplication {
         /* Josh Test Addition End */
         
     }
+    
+    void setSim(Simulation pSim) {
+        sim = pSim;
+        rootNode.detachAllChildren();
+        scene = new Scene(pSim, rootNode, assetManager, viewPort);
+    }
+    Simulation getSim() {return sim;}
 
     //Per frame update function
     @Override
@@ -74,7 +79,14 @@ public class Application extends SimpleApplication {
         sim.setProbCargo(startScreen.getCargoProb());
         sim.setProbPatrol(startScreen.getPatrolProb());
         sim.setProbPirate(startScreen.getPirateProb());
-        
+        if (startScreen.singleStep) {
+            startScreen.singleStep = false;
+            startScreen.simPaused = true;
+            sim.tick();
+            timeSinceLastTick = 0;
+            timeSinceLastFrame = 0;
+            scene.update(0);
+        }
         //Fun code to compute which simulation timestep should be rendered at which alpha
         if (!startScreen.simPaused) {
             timeSinceLastTick += tpf;

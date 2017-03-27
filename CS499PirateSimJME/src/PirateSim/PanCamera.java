@@ -36,11 +36,11 @@ public class PanCamera implements AnalogListener, ActionListener {
         cam = pCam;
         inputMan = pInputMan;
         flyByCam = pFlyByCam;
-        up = Vector3f.UNIT_Y;
+        up = Vector3f.UNIT_Z;
         canPan = false;
         
-        cam.setLocation(new Vector3f(5f, 5f, 20f));
-        cam.lookAtDirection(Vector3f.UNIT_Z.mult(-1), up);
+        cam.setLocation(new Vector3f(0f, 20f, 0f));
+        cam.lookAtDirection(Vector3f.UNIT_Y.mult(-1), up);
         
         flyByCam.setDragToRotate(true); //TODO debug only
         flyByCam.setMoveSpeed(30f);
@@ -95,14 +95,14 @@ flyByReg = true;
     void pan(float value, Vector3f axis, boolean can) {
         if (!can) return;
         Vector3f pos = cam.getLocation();
-        pos = pos.add(axis.mult(value*pos.z));
+        pos = pos.add(axis.mult(value*pos.y));
         cam.setLocation(pos);
     }
     void zoom(float value) {
         Vector3f pos = cam.getLocation();
-        float speed = pos.z/10*value;
-        pos = pos.subtract(Vector3f.UNIT_Z.mult(speed));
-        if (pos.z > 1 && pos.z < 200) cam.setLocation(pos);
+        float speed = pos.y/10*value;
+        pos = pos.subtract(Vector3f.UNIT_Y.mult(speed));
+        if (pos.y > 1 && pos.y < 200) cam.setLocation(pos);
     }
     public void onAction(String name, boolean value, float tpf) {
         if (name.equals("PANCAM_Drag")){
