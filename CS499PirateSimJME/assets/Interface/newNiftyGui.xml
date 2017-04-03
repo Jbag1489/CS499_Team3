@@ -172,15 +172,15 @@ to avoid &#10; &#10;Somali Pirate Attacks"
                     </panel>
                     
                     <panel id="piratesDefeatedPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="piratesDefeatedLabel" name="label" text="XX pirate ships have been defeated.      " />
+                        <control id="piratesDefeatedLabel" name="label" text="There have been XX pirates have been defeated.      " />
                     </panel>
                     
                     <panel id="cargosCapturedPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="cargosCapturedLabel" name="label" text="XX cargo ships have been captured.      " />
+                        <control id="cargosCapturedLabel" name="label" text="There have been XX ship captures.      " />
                     </panel>
                     
                     <panel id="capturedsRescuedPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="capturedsRescuedLabel" name="label" text="XX captured ships have been rescued.      " />
+                        <control id="capturedsRescuedLabel" name="label" text="There have been XX ship rescues.      " />
                     </panel>
                     
                     <panel id="timeStepPanel" height="2%" childLayout="vertical" valign="bottom">

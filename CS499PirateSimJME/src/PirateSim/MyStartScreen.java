@@ -51,6 +51,21 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     String witdthSliderLabelText;
     String heightSliderLabelText;
     
+    // Labels for statistics
+    String pirateEnteredString;
+    String pirateExitString;
+    String patrolEnteredString;
+    String patrolExitString;
+    String cargoEnteredString;
+    String cargoExitedString;
+    
+    // Interactions
+    String cargoCapturedString;
+    String cargoRescuedString;
+    String pirateDefeatedString;
+    
+    String timeStepsString;
+    
     boolean singleTick = false;
 
     /**
@@ -278,4 +293,49 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
          * jME update loop!
          */
     }
+    
+    
+    // Setters for statistic strings    
+    public void setPirateEnteredString(int num) {
+        this.pirateEnteredString = num + " pirate ships have entered the simulation.";
+    }
+
+    public void setPirateExitString(int num) {
+        this.pirateExitString = num + " pirate ships have exited the simulation.";
+    }
+
+    public void setPatrolEnteredString(int num) {
+        this.patrolEnteredString = num + " patrol ships have entered the simulation.";;
+    }
+
+    public void setPatrolExitString(int num) {
+        this.patrolExitString = num + " patrol ships have exited the simulation.";
+    }
+
+    public void setCargoEnteredString(int num) {
+        this.cargoEnteredString = num + " cargo ships have entered the simulation.";
+    }
+
+    public void setCargoExitedString(int num) {
+        this.cargoExitedString = num + " cargo ships have exited the simulation.";
+    }
+
+    public void setCargoCapturedString(int num) {
+        this.cargoCapturedString = "There have been " + num + " ship captures.";
+    }
+
+    public void setCargoRescuedString(int num) {
+        this.cargoRescuedString = "There have been " + num + " ship rescues.";
+    }
+
+    public void setPirateDefeatedString(int num) {
+        this.pirateDefeatedString = "There have been " + num + " pirates have been defeated.";
+    }
+
+    public void setTimeStepsString(int num) {
+        this.timeStepsString = "There have been " + num + " time steps.";
+    }
+    
+    
+    
 }
