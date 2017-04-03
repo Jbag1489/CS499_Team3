@@ -30,6 +30,8 @@ class Simulation {
     long seed;
     private Random rand;
     private int nextID = 0;
+
+    int shipsEntered [], shipsExited [], captures = 0, defeats = 0, rescues = 0;
     
     /** * Constructs a simulation object.
      * @param xSize the East-West extent of the simulation area in cells
@@ -49,6 +51,8 @@ class Simulation {
         ships = new ArrayList();       
         deadShips = new ArrayList();
         probNewShip = new double[NUM_SHIP_TYPES];
+        shipsEntered = new int[NUM_SHIP_TYPES];
+        shipsExited = new int[NUM_SHIP_TYPES];
         probNewShip[CARGO] = cProbNewCargo;
         probNewShip[PIRATE] = cProbNewPirate;
         probNewShip[PATROL] = cProbNewPatrol;
@@ -76,7 +80,7 @@ class Simulation {
         }
         for (Ship ship : ships) ship.addPreviousState();
         for (Ship ship : ships) ship.move();
-        for (Ship ship : deadShips) { //ships that exited the border or sunk completely when ship.move() was called are now actually deleted
+        for (Ship ship : deadShips) {
             ships.remove(ship);
             if (inBounds(ship.position.x, ship.position.y)) cells[ship.position.x][ship.position.y].ships.remove(ship);
         }
@@ -161,14 +165,19 @@ class Simulation {
             if (inBounds(position.x, position.y))
                 cells[position.x][position.y].ships.add(this);
             else if (!inBorder(position.x, position.y)) {
+                if (type == ESCORTPIRATE) shipsExited[PIRATE]++;
+                else shipsExited[type]++;
                 deadShips.add(this);
             }
         }
         /** * See if the ship should be defeated. */
         void doDefeat() {
-            if (type == PIRATE || type == ESCORTPIRATE) if (getNeighbor(PATROL) != null)
-                if (type == PIRATE) type = WRECK;
-                else type = ESCORTWRECK;
+            if (type == PIRATE || type == ESCORTPIRATE)
+                if (getNeighbor(PATROL) != null) {
+                    defeats++;
+                    if (type == PIRATE) type = WRECK;
+                    else type = ESCORTWRECK;
+                }
         }
         /** * See if the ship should be captured or rescued. */
         void doCapAndResc() {
@@ -176,6 +185,7 @@ class Simulation {
             case CARGO:
                 Ship pirate = getNeighbor(PIRATE);
                 if (pirate != null) {
+                    captures++;
                     type = CAPTURED;
                     velocity.x = 0;
                     velocity.y = -1;
@@ -187,6 +197,7 @@ class Simulation {
                 break;
             case CAPTURED:
                 if (getNeighbor(PATROL) != null) {
+                    rescues++;
                     type = CARGO;
                     velocity.x = 1;
                     velocity.y = 0;
@@ -229,6 +240,7 @@ class Simulation {
      * @param type the type of ship to attempt to generate */
     void generateShip(int type) {
         if (test(probNewShip[type])) {
+            shipsEntered[type]++;
             Ship ship = new Ship(type);
             ships.add(ship);
             for (int i = 0; i < INTERPOLATION_SAMPLES; i++) {
