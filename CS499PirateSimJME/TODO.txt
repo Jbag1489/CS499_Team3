@@ -1,0 +1,7 @@
+Josh:
+	Compact GUI
+		start/quit closer horizontal
+		vertical between all groups
+		all sliders on one row?
+
+
