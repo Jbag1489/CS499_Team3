@@ -31,6 +31,7 @@ import com.jme3.post.filters.CartoonEdgeFilter;
 import com.jme3.post.filters.DepthOfFieldFilter;
 import com.jme3.post.filters.LightScatteringFilter;
 import com.jme3.texture.Texture2D;
+import java.awt.Color;
 
 /**
  * Class to create a JME scenegraph for a given simulation state.
@@ -53,7 +54,8 @@ public class Scene {
         viewPort = pViewPort;
         boats = new Boats();
         background = new Background();
-        lighting = new Lighting(16, 0f, 180f, (new Vector3f(0f, 1f, 0f)).normalizeLocal());
+        //lighting needs to be initialized after background
+        lighting = new Lighting(16, 90f, 270f, (new Vector3f(0f, 1f, 0f)).normalizeLocal(), background.water);
     }
     //update all the scene elements, just boats and the background for now
     void update(float alpha) {
@@ -221,46 +223,33 @@ public class Scene {
     /**
      * This class renders scenery like the sea and surounding terrain
      */
-    class Background {
+    public class Background {
         Node backgroundNode;
         WaterFilter water;
         
         //creates map grid, quad for the sea, TODO terrain
         Background() {
-
-        Vector3f lightDir = new Vector3f(1, -1, 0);
-
+            Vector3f lightDir = new Vector3f(1, -1, 0);
             water = new WaterFilter(rootNode, lightDir);
-
             FilterPostProcessor fpp = new FilterPostProcessor(assetMan);
-
             fpp.addFilter(water);
-
     //        LightScatteringFilter lsf = new LightScatteringFilter(lightDir.mult(-300));
     //        lsf.setLightDensity(1.0f);
     //        fpp.addFilter(lsf);
     //        
-
             //   fpp.addFilter(new TranslucentBucketFilter());
             //       
-
             // fpp.setNumSamples(4);
-
-
             water.setWaveScale(0.003f);
             water.setMaxAmplitude(2f);
             water.setFoamExistence(new Vector3f(1f, 4, 0.5f));
             water.setFoamTexture((Texture2D) assetMan.loadTexture("Common/MatDefs/Water/Textures/foam2.jpg"));
             //water.setNormalScale(0.5f);
-
             //water.setRefractionConstant(0.25f);
             water.setRefractionStrength(0.2f);
             //water.setFoamHardness(0.6f);
-
             water.setWaterHeight(0f);
-
             viewPort.addProcessor(fpp);
-            
             
             Quad ground = new Quad(simScene.size.x + SEA_BORDER_SIZE*2, simScene.size.y + SEA_BORDER_SIZE*2);
             Geometry seaGeom = new Geometry("Quad", ground);
@@ -299,12 +288,16 @@ public class Scene {
         DirectionalLightShadowRenderer dlsr;
         AmbientLight sunAmbient;
         AmbientLight moonAmbient;
+        WaterFilter water;
+        ColorRGBA initialWaterColor;
+        float maxRed = 0, maxGreen = 0, maxBlue = 0;
         float degrees = 0, degMin = 0, degMax = 180;
         float previousAlpha = 0, deltaAlpha = 0;
-        int dayHours;
+        int dayHours = 0, daySteps = 0, nightSteps = 0;
         boolean isDay = true;
         
-        Lighting(int pdayHours, float pdegMin, float pdegMax, Vector3f direction) {
+        Lighting(int pdayHours, float pdegMin, float pdegMax, Vector3f direction, WaterFilter pWater) {
+            water = pWater;
             dayHours = pdayHours;
             degMin = pdegMin;
             degMax = pdegMax;
@@ -316,6 +309,8 @@ public class Scene {
             sunAmbient = new AmbientLight();
             sunAmbient.setColor(ColorRGBA.Blue.mult(0.1f));
             
+            calculateNumTimeSteps();
+            
             moonLight = new DirectionalLight();
             moonLight.setDirection(direction);
             moonLight.setColor(ColorRGBA.White.mult(0.2f));
@@ -323,7 +318,7 @@ public class Scene {
             moonAmbient.setColor(ColorRGBA.Blue.mult(0.05f));
             
             final int SHADOWMAP_SIZE=2048;
-            dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);  
+            dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);
             dlsr.setLight(sunLight);
             viewPort.addProcessor(dlsr); 
 
@@ -331,6 +326,15 @@ public class Scene {
             rootNode.addLight(sunAmbient);
             rootNode.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
             currentLight = sunLight;
+            
+            //water stuff
+            water.setLightDirection(currentLight.getDirection());
+            water.setShininess(0.2f);
+            initialWaterColor = water.getDeepWaterColor();
+            //these will be equal to the color when sin(degrees) = 1
+            maxRed = initialWaterColor.getRed() + 0.2f;
+            maxGreen = initialWaterColor.getGreen() + 1.25f;
+            maxBlue = initialWaterColor.getBlue() + 1.5f;
         }
         
         void update(float alpha) {
@@ -352,6 +356,8 @@ public class Scene {
                 Vector3f dir = currentLight.getDirection();
                 dir = dir.add(0.0f, FastMath.cos(degrees * FastMath.DEG_TO_RAD), -FastMath.sin(degrees * FastMath.DEG_TO_RAD)).normalizeLocal();
                 currentLight.setDirection(dir);
+                updateWaterColor();
+                System.out.println(currentLight.getDirection().toString());
             }
         }
         
@@ -365,6 +371,7 @@ public class Scene {
                 rootNode.addLight(moonAmbient);
                 dlsr.setLight(moonLight);
                 currentLight = moonLight;
+                System.out.println("Switched now");
             }
             else {
                 isDay = true;
@@ -375,6 +382,7 @@ public class Scene {
                 rootNode.addLight(sunAmbient);
                 dlsr.setLight(sunLight);
                 currentLight = sunLight;
+                System.out.println("Switched now");
             }
         }
         
@@ -388,6 +396,36 @@ public class Scene {
             else {
                 degrees += 180f * deltaAlpha / (24f * 60f - hours);
             }
+        }
+        
+        void updateWaterColor() {
+            // TODO
+            // sun should be purply, orangey, red color towards sunset
+            // sun should be reddish, bluish, orange/yellow at sunrise
+            if (isDay)
+            {
+                float yValue = FastMath.abs(currentLight.getDirection().y);
+                //don't want the water color to be darker than the initial navy color
+                if (    ((maxRed * yValue) < initialWaterColor.r) 
+                    || ((maxGreen * yValue) < initialWaterColor.g) 
+                    || ((maxBlue * yValue) < initialWaterColor.b))
+                {
+                    water.setDeepWaterColor(initialWaterColor);
+                }
+                else
+                {
+                    water.setDeepWaterColor(new ColorRGBA(maxRed * yValue, maxGreen * yValue, maxBlue * yValue, 1.0f));
+                }
+            }
+            else //color doesn't change during nighttime
+            {
+                water.setDeepWaterColor(initialWaterColor);
+            }
+        }
+        
+        void calculateNumTimeSteps() {
+            daySteps = dayHours * 20;
+            nightSteps = (24 - dayHours) * 20;
         }
     }
 }
