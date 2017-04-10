@@ -87,8 +87,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         simStartScreen = new Simulation((int) simWidth.getValue(), (int) simHeight.getValue(),
                 (double) cargoProb.getValue(), (double) pirateProb.getValue(),
                 (double) patrolProb.getValue(), seed);
-        pauseButton.setText("WTFFFFFF");
-
+        
         simPaused = false; // Will start running the simulation
     }
 
