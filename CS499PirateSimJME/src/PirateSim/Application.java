@@ -95,6 +95,7 @@ public class Application extends SimpleApplication {
                 timeSinceLastTick -= 1/simSpeed;
             }
             float alpha = timeSinceLastTick*simSpeed;
+            updateStatisticStrings();
             //update the scene now that the simulation state is correct and alpha has been found
             scene.update(alpha);
         }
@@ -108,6 +109,7 @@ public class Application extends SimpleApplication {
             float alpha = timeSinceLastTick*simSpeed;
             //update the scene now that the simulation state is correct and alpha has been found
             scene.update(alpha);
+            updateStatisticStrings();
             
             startScreen.singleTick = false;
         }
@@ -116,4 +118,18 @@ public class Application extends SimpleApplication {
     //We hopefully we will not need to use this
     @Override
     public void simpleRender(RenderManager rm) {}
+    
+    public void updateStatisticStrings(){
+        startScreen.setCargoEnteredString(sim.shipsEntered[sim.CARGO]);
+        startScreen.setPatrolEnteredString(sim.shipsEntered[sim.PATROL]);
+        startScreen.setPirateEnteredString(sim.shipsEntered[sim.PIRATE]);
+        startScreen.setCargoExitedString(sim.shipsExited[sim.CARGO]);
+        startScreen.setPatrolExitedString(sim.shipsExited[sim.PATROL]);
+        startScreen.setPirateExitedString(sim.shipsExited[sim.PIRATE]);
+        startScreen.setCargoCapturedString(sim.captures);
+        startScreen.setCargoRescuedString(sim.rescues);
+        startScreen.setPirateDefeatedString(sim.defeats);
+        startScreen.setTimeStepsString(sim.timeStep);
+        
+    }
 }

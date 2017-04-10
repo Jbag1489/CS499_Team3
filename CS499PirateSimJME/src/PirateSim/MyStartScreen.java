@@ -10,6 +10,7 @@ import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.NiftyEventSubscriber;
+import de.lessvoid.nifty.controls.Button;
 import de.lessvoid.nifty.controls.Label;
 import de.lessvoid.nifty.controls.Slider;
 import de.lessvoid.nifty.controls.SliderChangedEvent;
@@ -28,7 +29,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     float simSpeed = 1; // ties to timeAcceleration in Application
     boolean simPaused = true; // ties to simPaused in Application
     boolean singleStep = false;
-    // Initialize to true, when start is pressed, it will "unpause" 
+    // Initialize to true, when start is pressed, it will "unpause"
     // Objects for XML Control
     int width = 20;
     int height = 10;
@@ -50,34 +51,44 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     String pirateLabelText;
     String witdthSliderLabelText;
     String heightSliderLabelText;
-    
-    // Labels for statistics
+    // Strings for Labels for statistics
     String pirateEnteredString;
     String pirateExitString;
     String patrolEnteredString;
     String patrolExitString;
     String cargoEnteredString;
     String cargoExitedString;
-    
-    // Interactions
+    // String for Label Interactions
     String cargoCapturedString;
     String cargoRescuedString;
     String pirateDefeatedString;
-    
     String timeStepsString;
-    
+    // Labels for statistics
+    Label pirateEnteredLabel;
+    Label pirateExitLabel;
+    Label patrolEnteredLabel;
+    Label patrolExitLabel;
+    Label cargoEnteredLabel;
+    Label cargoExitedLabel;
+    // Label Interactions
+    Label cargoCapturedLabel;
+    Label cargoRescuedLabel;
+    Label pirateDefeatedLabel;
+    Label timeStepsLabel;
     boolean singleTick = false;
+    Button pauseButton;
 
     /**
      * custom methods
      */
     public void startGame(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
-        // Simulation(int xSize, int ySize, double cProbNewCargo, double cProbNewPirate, double cProbNewPatrol, long seed)        
-        simStartScreen = new Simulation((int)simWidth.getValue(), (int)simHeight.getValue(),
-                (double)cargoProb.getValue(), (double)pirateProb.getValue(), 
-                (double)patrolProb.getValue(), seed);
-                
+        // Simulation(int xSize, int ySize, double cProbNewCargo, double cProbNewPirate, double cProbNewPatrol, long seed)
+        simStartScreen = new Simulation((int) simWidth.getValue(), (int) simHeight.getValue(),
+                (double) cargoProb.getValue(), (double) pirateProb.getValue(),
+                (double) patrolProb.getValue(), seed);
+        pauseButton.setText("WTFFFFFF");
+
         simPaused = false; // Will start running the simulation
     }
 
@@ -86,10 +97,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     }
 
     public void increaseSpeed() {
-        if(speedIndex+1 == simSpeeds.length){
+        if (speedIndex + 1 == simSpeeds.length) {
             // Speed is at maximum, so do nothing
-        }
-        else{
+        } else {
             speedIndex++;
             simSpeed = simSpeeds[speedIndex];
             updateSpeedLabel();
@@ -105,26 +115,28 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
             updateSpeedLabel();
         }
     }
-    
-    public float getSimSpeed(){
+
+    public float getSimSpeed() {
         return simSpeed;
     }
 
-    public MyStartScreen( Simulation sim ) {
+    public MyStartScreen(Simulation sim) {
         /**
          * Your custom constructor, can accept arguments
          */
         /*
-        this.simStartScreen = sim;
-        this.seed = sim.seed;
-        */
+         this.simStartScreen = sim;
+         this.seed = sim.seed;
+         */
     }
 
     public void changePauseState() {
         if (simPaused) {
             simPaused = false;
+            pauseButton.setText("Pause");
         } else {
             simPaused = true;
+            pauseButton.setText("Unpause");
         }
     }
 
@@ -142,16 +154,16 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
 
     public void onEndScreen() {
     }
-    
-    private void updateSpeedLabel(){
+
+    private void updateSpeedLabel() {
         String speedLabelText = "Sim Speed: " + simSpeeds[speedIndex];
-        System.out.println("Sim speed changed to " + 
-                String.format("%.1f", simSpeeds[speedIndex]));
+        System.out.println("Sim speed changed to "
+                + String.format("%.1f", simSpeeds[speedIndex]));
         simSpeedLabel.setText(speedLabelText);
     }
-    
-    public void advanceSingleTick(){
-        
+
+    public void advanceSingleTick() {
+
         simPaused = true;
         singleTick = true;
         simStartScreen.tick();
@@ -164,15 +176,17 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
         myApp = (SimpleApplication) app;
-        
+
         screenHud = nifty.getScreen("hud");
-        
+
         // Initialize array of speeds
         simSpeeds = new float[4];
         simSpeeds[0] = (float) 1.0;
         simSpeeds[1] = (float) 2.0;
         simSpeeds[2] = (float) 5.0;
         simSpeeds[3] = (float) 10.0;
+        
+        pauseButton = screenHud.findNiftyControl("PauseButton", Button.class);
 
         // Initialize simulation to 1x speed.
         speedIndex = 0;
@@ -180,14 +194,14 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         // Create objects for XML Controls
         simWidth = screen.findNiftyControl("widthSlider", Slider.class);
         simHeight = screen.findNiftyControl("heightSlider", Slider.class);
-        
+
         cargoProb = screen.findNiftyControl("cargoSlider", Slider.class);
         patrolProb = screen.findNiftyControl("patrolSlider", Slider.class);
         pirateProb = screen.findNiftyControl("pirateSlider", Slider.class);
 
         widthLabel = screen.findNiftyControl("widthSliderLabel", Label.class);
         heightLabel = screen.findNiftyControl("heightSliderLabel", Label.class);
-        
+
         cargoLabel = screen.findNiftyControl("cargoSliderLabel", Label.class);
         patrolLabel = screen.findNiftyControl("patrolSliderLabel", Label.class);
         pirateLabel = screen.findNiftyControl("pirateSliderLabel", Label.class);
@@ -197,10 +211,10 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         cargoLabelText = "Cargo Probability: " + String.format("%.2f", cargoProb.getValue());
         patrolLabelText = "Patrol Probability: " + String.format("%.2f", patrolProb.getValue());
         pirateLabelText = "Pirate Probability: " + String.format("%.2f", pirateProb.getValue());
-        
+
         witdthSliderLabelText = "Sim width: " + width;
         heightSliderLabelText = "Sim height: " + height;
-        
+
 
         // Initialize Slider values
         cargoProb.setMax((float) 1.00);
@@ -220,18 +234,56 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         pirateProb.setStepSize((float) .05);
         pirateProb.setValue((float) 0.25);
         pirateProb.setButtonStepSize((float) 0.05);
-        
+
         simWidth.setMax((float) 400);
         simWidth.setMin((float) 10);
         simWidth.setStepSize((float) 10);
         simWidth.setValue((float) 20);
         simWidth.setButtonStepSize((float) 10);
-        
+
         simHeight.setMax((float) 100);
         simHeight.setMin((float) 10);
         simHeight.setStepSize((float) 10);
         simHeight.setValue((float) 10);
         simHeight.setButtonStepSize((float) 10);
+
+        // Initialize Label Objects
+        pirateEnteredLabel = screenHud.findNiftyControl("piratesEnteredLabel", Label.class);
+        pirateExitLabel = screenHud.findNiftyControl("piratesExitedLabel", Label.class);
+        patrolEnteredLabel = screenHud.findNiftyControl("patrolsEnteredLabel", Label.class);
+        patrolExitLabel = screenHud.findNiftyControl("patrolsExitedLabel", Label.class);
+        cargoEnteredLabel = screenHud.findNiftyControl("cargosEnteredLabel", Label.class);
+        cargoExitedLabel = screenHud.findNiftyControl("cargosExitedLabel", Label.class);
+
+        // Label Interactions
+        cargoCapturedLabel = screenHud.findNiftyControl("capturedStatsLabel", Label.class);
+        cargoRescuedLabel = screenHud.findNiftyControl("rescuedStatsLabel", Label.class);
+        pirateDefeatedLabel = screenHud.findNiftyControl("piratesDefeatedLabel", Label.class);
+
+        timeStepsLabel = screenHud.findNiftyControl("timeStepLabel", Label.class);
+
+        // Initialize statistics labels text
+        pirateEnteredString = "0 pirate ships have entered the simulation.";
+        pirateExitString = "0 pirate ships have exited the simulation.";
+        patrolEnteredString = "0 patrol ships have entered the simulation.";
+        patrolExitString = "0 patrol ships have exited the simulation.";
+        cargoEnteredString = "0 cargo ships have entered the simulation.";
+        cargoExitedString = "0 cargo ships have exited the simulation.";
+        cargoCapturedString = "There have been 0 ship captures.";
+        cargoRescuedString = "There have been 0 ship rescues.";
+        pirateDefeatedString = "There have been 0 pirates have been defeated.";
+        timeStepsString = "There have been 0 time steps.";
+        
+//        pirateEnteredLabel.setText(pirateEnteredString);
+//        pirateExitLabel.setText(pirateExitString);
+//        patrolEnteredLabel.setText(patrolEnteredString);
+//        patrolExitLabel.setText(pirateExitString);
+//        cargoEnteredLabel.setText(cargoEnteredString);
+//        cargoExitedLabel.setText(cargoExitedString);
+//        cargoCapturedLabel.setText(cargoCapturedString);
+//        cargoRescuedLabel.setText(cargoRescuedString);
+//        pirateDefeatedLabel.setText(pirateDefeatedString);
+//        timeStepsLabel.setText(timeStepsString);
 
     }
 
@@ -264,78 +316,84 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         pirateLabelText = "Pirate Probability: " + String.format("%.2f", pirateProb.getValue());
         pirateLabel.setText(pirateLabelText);
     }
-    
+
     @NiftyEventSubscriber(id = "widthSlider")
     public void onWidthSliderChangedEvent(String id, SliderChangedEvent event) {
-        width = (int)simWidth.getValue();
+        width = (int) simWidth.getValue();
         witdthSliderLabelText = "Sim width: " + width;
         widthLabel.setText(witdthSliderLabelText);
     }
-    
+
     @NiftyEventSubscriber(id = "heightSlider")
     public void onHeightSliderChangedEvent(String id, SliderChangedEvent event) {
-        height = (int)simHeight.getValue();
+        height = (int) simHeight.getValue();
         witdthSliderLabelText = "Sim height: " + height;
         heightLabel.setText(witdthSliderLabelText);
     }
 
-    int getWidth(){
+    int getWidth() {
         return width;
     }
-    
-    int getHeight(){
+
+    int getHeight() {
         return height;
     }
-    
+
     @Override
     public void update(float tpf) {
         /**
          * jME update loop!
          */
     }
-    
-    
-    // Setters for statistic strings    
+
+    // Setters for statistic strings
     public void setPirateEnteredString(int num) {
         this.pirateEnteredString = num + " pirate ships have entered the simulation.";
+        pirateEnteredLabel.setText(pirateEnteredString);
     }
 
-    public void setPirateExitString(int num) {
+    public void setPirateExitedString(int num) {
         this.pirateExitString = num + " pirate ships have exited the simulation.";
+        pirateExitLabel.setText(pirateExitString);
     }
 
     public void setPatrolEnteredString(int num) {
-        this.patrolEnteredString = num + " patrol ships have entered the simulation.";;
+        this.patrolEnteredString = num + " patrol ships have entered the simulation.";
+        patrolEnteredLabel.setText(patrolEnteredString);
     }
 
-    public void setPatrolExitString(int num) {
+    public void setPatrolExitedString(int num) {
         this.patrolExitString = num + " patrol ships have exited the simulation.";
+        patrolExitLabel.setText(patrolExitString);
     }
 
     public void setCargoEnteredString(int num) {
         this.cargoEnteredString = num + " cargo ships have entered the simulation.";
+        cargoEnteredLabel.setText(cargoEnteredString);
     }
 
     public void setCargoExitedString(int num) {
         this.cargoExitedString = num + " cargo ships have exited the simulation.";
+        cargoExitedLabel.setText(cargoExitedString);
     }
 
     public void setCargoCapturedString(int num) {
         this.cargoCapturedString = "There have been " + num + " ship captures.";
+        cargoCapturedLabel.setText(cargoCapturedString);
     }
 
     public void setCargoRescuedString(int num) {
         this.cargoRescuedString = "There have been " + num + " ship rescues.";
+        cargoRescuedLabel.setText(cargoRescuedString);
     }
 
     public void setPirateDefeatedString(int num) {
         this.pirateDefeatedString = "There have been " + num + " pirates have been defeated.";
+        pirateDefeatedLabel.setText(pirateDefeatedString);
     }
 
     public void setTimeStepsString(int num) {
         this.timeStepsString = "There have been " + num + " time steps.";
+        timeStepsLabel.setText(timeStepsString);
     }
-    
-    
-    
 }

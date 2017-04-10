@@ -13,7 +13,7 @@
         <layer id="foreground" backgroundColor="#0000" childLayout="vertical">
             
             <panel id="panel_top" height="5%" width="75%" align="center" childLayout="center">  
-                <text text="Somali Pirate Simulation" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />
+                <text text="&#10;Somali Pirate Simulation" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />
             </panel>
             
             <panel id="panel_mid" height="45%" width="75%" align="center" childLayout="center">       
@@ -21,7 +21,37 @@
                 <text text="The International Maritime Bureau has commisioned a simulation to decrease 
 the attacks of cargo ships by Somalian pirates in the Gulf of Aden. The attacks were carried out 
 nearly daily, and something needs to be done. This simulation will be the first step to finding ways 
-to avoid &#10; &#10;Somali Pirate Attacks" 
+to avoid Somali Pirate Attacks.
+&#10;&#10;
+By clicking the Start Simulation button, the simulation will start with the default parameters. If you no longer wish the run the simulation,
+you can press Quit to return to your desktop.
+&#10;&#10;
+The first two sliders after the start and quit buttons will control the size of the simulation. Each unit of the simulation is equal to 1 mile.
+&#10;
+So, a simulation that is 20 wide and 10 tall would have a total of 200 square miles.
+&#10; 
+To control these, you can either click and drag the slider, or click the arrow buttons on either end of the slider.
+&#10;&#10;
+Under the simulation size sliders, the are three additional sliders that serve to control the spawn probability of the 
+cargo ships, patrol ships, and pirate ships in that order.
+&#10;
+The sliders behave as the sliders above. The probability represents the chance that one of the associated ships will spawn on each new timestep 
+of the simulation. For example, if all three sliders are set at 1.00, 3 ships will spawn for each tick of the simulation.
+&#10;&#10;&#10;
+Once the simulation has started, there will be 5 buttons along the bottom of the screen. In order left to right, these buttons are:
+&#10;
+Pause (Or Unpause), Single Tick, Slow Down, Speed Up, and Quit.
+&#10;&#10;
+Pause/Unpause will simply change the state of the simulation between running and paused.
+&#10;
+Single Tick will pause the simulation then advance one more tick. If the simulation is paused, it will advance one tick.
+&#10;
+Slow Down will decrease the speed of the simulation to a minimum of 1x speed.
+&#10;
+Speed Up will increase the speed of the simulation to a maximum of 10x speed.
+&#10;
+Quit will exit the simulation and return you to your desktop.
+"
                       font="Interface/Fonts/Default.fnt" width="100%" height="100%" wrap="true" />
             </panel>
             
@@ -139,42 +169,42 @@ to avoid &#10; &#10;Somali Pirate Attacks"
                 
                 <panel id="stats" height="86%" childLayout="vertical">
                 
-                    <panel id="capturedStatsPanel" height="2%" childLayout="vertical" valign="top">
-                        <control id="capturedStatsLabel" name="label" text="There have been XX ships captured.      " />
+                    <panel id="capturedStatsPanel" height="2%" childLayout="vertical" valign="top" >
+                        <control id="capturedStatsLabel" name="label" text="There have been XX ships captured.      " align="left"/>
                     </panel>
                     
                     <panel id="rescuedStatsPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="rescuedStatsLabel" name="label" text="There have been XX ships rescued.      " />
+                        <control id="rescuedStatsLabel" name="label" text="There have been XX ships rescued.      " align="left"/>
                     </panel>
                     
                     <panel id="cargosEnteredPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="cargosEnteredLabel" name="label" text="XX Cargo ships have entered the simulation.      " />
+                        <control id="cargosEnteredLabel" name="label" text="XX Cargo ships have entered the simulation.      " align="left"/>
                     </panel>
                     
                     <panel id="cargosExitedPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="cargosExitedLabel" name="label" text="XX cargo ships have exited the simulation.      " />
+                        <control id="cargosExitedLabel" name="label" text="XX cargo ships have exited the simulation.      " align="left"/>
                     </panel>
                     
                     <panel id="patrolsEnteredPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="patrolsEnteredLabel" name="label" text="XX patrol ships have entered the simulation.      " />
+                        <control id="patrolsEnteredLabel" name="label" text="XX patrol ships have entered the simulation.      " align="left"/>
                     </panel>
                     
                     <panel id="patrolsExitedPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="patrolsExitedLabel" name="label" text="XX patrol ships have exited the simulation.      " />
+                        <control id="patrolsExitedLabel" name="label" text="XX patrol ships have exited the simulation.      " align="left"/>
                     </panel>
                     
                     <panel id="piratesEnteredPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="piratesEnteredLabel" name="label" text="XX pirate ships have entered the simulation.      " />
+                        <control id="piratesEnteredLabel" name="label" text="XX pirate ships have entered the simulation.      " align="left"/>
                     </panel>
                     
                     <panel id="piratesExitedPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="piratesExitedLabel" name="label" text="XX pirate ships have exited the simulation.      " />
+                        <control id="piratesExitedLabel" name="label" text="XX pirate ships have exited the simulation.      " align="left"/>
                     </panel>
                     
                     <panel id="piratesDefeatedPanel" height="2%" childLayout="vertical" valign="bottom">
-                        <control id="piratesDefeatedLabel" name="label" text="There have been XX pirates have been defeated.      " />
+                        <control id="piratesDefeatedLabel" name="label" text="There have been XX pirates have been defeated.      " align="left"/>
                     </panel>
-                    
+                  <!--  
                     <panel id="cargosCapturedPanel" height="2%" childLayout="vertical" valign="bottom">
                         <control id="cargosCapturedLabel" name="label" text="There have been XX ship captures.      " />
                     </panel>
@@ -182,7 +212,7 @@ to avoid &#10; &#10;Somali Pirate Attacks"
                     <panel id="capturedsRescuedPanel" height="2%" childLayout="vertical" valign="bottom">
                         <control id="capturedsRescuedLabel" name="label" text="There have been XX ship rescues.      " />
                     </panel>
-                    
+                    -->
                     <panel id="timeStepPanel" height="2%" childLayout="vertical" valign="bottom">
                         <control id="timeStepLabel" name="label" text="There have been XX time steps.         " />
                     </panel>
@@ -201,7 +231,7 @@ to avoid &#10; &#10;Somali Pirate Attacks"
                     <panel id="spacer_to_align_center" width="20%" />
                     
                     <panel id="pause_button_panel" height="50%" width="10%" valign="center" childLayout="center">
-                        <control name="button" label="Pause Simulation" id="PauseButton" valign="center" 
+                        <control name="button" label="Pause" id="PauseButton" valign="center" 
                                  visibleToMouse="true"> 
                             <interact onClick="changePauseState()"/>
                         </control>     
