@@ -34,6 +34,7 @@ public class Application extends SimpleApplication {
         settings = new AppSettings(true);
         settings.setFrameRate(targetFPS);
         settings.setTitle("Somali Pirate Simulation");
+        settings.setResolution(1024, 720);
         setSettings(settings);
         start();
     }

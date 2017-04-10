@@ -8,6 +8,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Transform;
 import com.jme3.math.Quaternion;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.renderer.ViewPort;
@@ -38,22 +39,23 @@ import com.jme3.texture.Texture2D;
  */
 public class Scene {
     AssetManager assetMan;
-    Simulation simScene;
+    Simulation sim;
     ViewPort viewPort;
     Node rootNode;
     Boats boats;
     Background background;
+    WaterFilter water;
     Lighting lighting;
     static final int SEA_BORDER_SIZE = 6;
     
     Scene(Simulation pSim, Node pRootNode, AssetManager pAssetMan, ViewPort pViewPort) {
-        simScene = pSim;
+        sim = pSim;
         rootNode = pRootNode;
         assetMan = pAssetMan;
         viewPort = pViewPort;
         boats = new Boats();
         background = new Background();
-        lighting = new Lighting(16, 0f, 180f, (new Vector3f(0f, 1f, 0f)).normalizeLocal());
+        lighting = new Lighting();
     }
     //update all the scene elements, just boats and the background for now
     void update(float alpha) {
@@ -168,7 +170,7 @@ public class Scene {
         //alpha is the amount of time since the last tick, alpha = 1 is the next tick
         void update(float alpha) {
             shipNode.detachAllChildren();
-            for (Simulation.Ship ship : simScene.ships) {
+            for (Simulation.Ship ship : sim.ships) {
                 Simulation.Ship visualShip = ship.previousStates.get(ship.previousStates.size() - 2);
                 Spatial boatModel = models[visualShip.type].clone();
                 Material matBoat = mats[visualShip.type];
@@ -176,7 +178,7 @@ public class Scene {
                 shipNode.attachChild(boatModel);
                 
                 Transform transform = interpolateShipTransform(ship, alpha);
-                transform.getRotation().fromAngles(-90, 0, 0);
+                transform.getRotation().fromAngles(-FastMath.PI/2, FastMath.PI, 0);
                 boatModel.getLocalTransform().set(transform);
             }
         }
@@ -202,7 +204,7 @@ public class Scene {
                 delta = FastMath.interpolateCatmullRom(0.9f, 0.5f, sampleShipPos(ship, 3 + i), sample2, sample1, sampleShipPos(ship, 0 + i)).subtract(translation);
                 delta = delta.mult(-1f);
             }
-            Quaternion rotation = new Quaternion().fromAngleAxis(FastMath.atan2(delta.y, delta.x), Vector3f.UNIT_Z);
+            Quaternion rotation = new Quaternion().fromAngleAxis(FastMath.atan2(delta.y, delta.x), Vector3f.UNIT_Y);
             //translation.x = (int) translation.x; translation.y = (int) translation.y;
             return new Transform(new Vector3f(translation.x, 0, translation.y), rotation);
         }
@@ -223,12 +225,11 @@ public class Scene {
      */
     class Background {
         Node backgroundNode;
-        WaterFilter water;
         
         //creates map grid, quad for the sea, TODO terrain
         Background() {
 
-        Vector3f lightDir = new Vector3f(1, -1, 0);
+        Vector3f lightDir = new Vector3f(0, -1, 0);
 
             water = new WaterFilter(rootNode, lightDir);
 
@@ -241,26 +242,41 @@ public class Scene {
     //        fpp.addFilter(lsf);
     //        
 
-            //   fpp.addFilter(new TranslucentBucketFilter());
+            //fpp.addFilter(new TranslucentBucketFilter());
+            //com.jme3.post.filters.TranslucentBucketFilter
             //       
 
             // fpp.setNumSamples(4);
 
 
-            water.setWaveScale(0.003f);
-            water.setMaxAmplitude(2f);
-            water.setFoamExistence(new Vector3f(1f, 4, 0.5f));
+            water.setWaveScale(0.03f);
+            water.setMaxAmplitude(0.5f);
+            water.setFoamExistence(new Vector3f(1f, 4, 0.1f));
             water.setFoamTexture((Texture2D) assetMan.loadTexture("Common/MatDefs/Water/Textures/foam2.jpg"));
-            //water.setNormalScale(0.5f);
-
-            //water.setRefractionConstant(0.25f);
-            water.setRefractionStrength(0.2f);
+            water.setNormalScale(20f);
+            water.setShininess(0.15f);
+            //water.setSunScale(1f);
+            water.setColorExtinction(new Vector3f(2f, 5f, 6f));
+            water.setDeepWaterColor(new ColorRGBA(0.03f, 0.06f, 0.1f, 1f));
+            water.setRadius(SEA_BORDER_SIZE);
+            water.setWaterColor(new ColorRGBA(0.4f, 0.9f, 1f, 1f));
+            water.setWindDirection(Vector2f.UNIT_XY);
+            water.setRefractionConstant(0.25f);
+            water.setRefractionStrength(0.1f);
             //water.setFoamHardness(0.6f);
 
             water.setWaterHeight(0f);
-
-            viewPort.addProcessor(fpp);
             
+            
+            Spatial terrain = assetMan.loadModel("Models/terrain/terrain.j3o");
+            Material terrainMat = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
+            terrainMat.setTexture("DiffuseMap", assetMan.loadTexture("Textures/gulf of aden color.png"));
+//            terrainMat.setBoolean("UseMaterialColors", true);
+//            terrainMat.setColor("Diffuse", ColorRGBA.White);
+//            terrainMat.setColor("Specular", ColorRGBA.White);
+//            terrainMat.setFloat("Shininess", 2f);  // [0,128]
+            
+            terrain.setMaterial(terrainMat);
             
             Quad ground = new Quad(sim.size.x + SEA_BORDER_SIZE*2, sim.size.y + SEA_BORDER_SIZE*2);
             Geometry seaGeom = new Geometry("Quad", ground);
@@ -269,7 +285,7 @@ public class Scene {
             mat.setColor("Diffuse", ColorRGBA.Blue);
             mat.setBoolean("UseMaterialColors",true);
             seaGeom.setMaterial(mat);
-            seaGeom.center().getLocalTranslation().set(-SEA_BORDER_SIZE, -SEA_BORDER_SIZE, 0f);
+            seaGeom.center().getLocalTranslation().set(-SEA_BORDER_SIZE, -3f, -SEA_BORDER_SIZE);
             Grid mapGrid = new Grid(sim.size.y + 1, sim.size.x + 1, 1);
             Geometry gridGeom = new Geometry("Grid", mapGrid);
             gridGeom.setShadowMode(RenderQueue.ShadowMode.Off);
@@ -282,8 +298,12 @@ public class Scene {
 
             backgroundNode = new Node("background");
             rootNode.attachChild(backgroundNode);
+            backgroundNode.attachChild(terrain);
             //backgroundNode.attachChild(seaGeom);
             backgroundNode.attachChild(gridGeom);
+            viewPort.addProcessor(fpp);
+            
+            createAxisReference();
         }
         void update(float alhpa) {
             //TODO animated water
@@ -291,103 +311,81 @@ public class Scene {
     }
     
     class Lighting {
-        Node lightNode;
-        Vector3f initialDirection;
+        Node lightingNode;
         DirectionalLight sunLight;
         DirectionalLight moonLight;
         DirectionalLight currentLight;
         DirectionalLightShadowRenderer dlsr;
         AmbientLight sunAmbient;
         AmbientLight moonAmbient;
-        float degrees = 0, degMin = 0, degMax = 180;
-        float previousAlpha = 0, deltaAlpha = 0;
-        int dayHours;
-        boolean isDay = true;
         
-        Lighting(int pdayHours, float pdegMin, float pdegMax, Vector3f direction) {
-            dayHours = pdayHours;
-            degMin = pdegMin;
-            degMax = pdegMax;
-            degrees = degMin;
-            initialDirection = direction;
+        Lighting() {
             sunLight = new DirectionalLight();
-            sunLight.setDirection(direction);
-            sunLight.setColor(ColorRGBA.White);
             sunAmbient = new AmbientLight();
-            sunAmbient.setColor(ColorRGBA.Blue.mult(0.1f));
             
             moonLight = new DirectionalLight();
-            moonLight.setDirection(direction);
-            moonLight.setColor(ColorRGBA.White.mult(0.2f));
             moonAmbient = new AmbientLight();
-            moonAmbient.setColor(ColorRGBA.Blue.mult(0.05f));
             
             final int SHADOWMAP_SIZE=2048;
             dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);  
             dlsr.setLight(sunLight);
-            viewPort.addProcessor(dlsr); 
-
+            viewPort.addProcessor(dlsr);
+            
+            lightingNode = new Node("lighting");
             rootNode.addLight(sunLight);
             rootNode.addLight(sunAmbient);
-            rootNode.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
             currentLight = sunLight;
+            //rootNode.attachChild(lightingNode);
+            rootNode.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         }
         
         void update(float alpha) {
-            if (degrees > degMax) {
-                toggleDayNight();
-                degrees = degMin;
-            }
-            else {
-                if (alpha > previousAlpha) {
-                    deltaAlpha = alpha - previousAlpha;
-                }
-                else {
-                    deltaAlpha = 1 - previousAlpha;
-                    deltaAlpha += alpha;
-                }
-                previousAlpha = alpha;
-                
-                updateDegrees(deltaAlpha);
-                Vector3f dir = currentLight.getDirection();
-                dir = dir.add(0.0f, FastMath.cos(degrees * FastMath.DEG_TO_RAD), -FastMath.sin(degrees * FastMath.DEG_TO_RAD)).normalizeLocal();
-                currentLight.setDirection(dir);
-            }
-        }
-        
-        void toggleDayNight() {
-            if (isDay) {
-                isDay = false;
-                rootNode.removeLight(sunLight);
-                rootNode.removeLight(sunAmbient);
-                moonLight.setDirection(initialDirection);
-                rootNode.addLight(moonLight);
-                rootNode.addLight(moonAmbient);
-                dlsr.setLight(moonLight);
-                currentLight = moonLight;
-            }
-            else {
-                isDay = true;
-                rootNode.removeLight(moonLight);
-                rootNode.removeLight(moonAmbient);
-                sunLight.setDirection(initialDirection);
-                rootNode.addLight(sunLight);
-                rootNode.addLight(sunAmbient);
-                dlsr.setLight(sunLight);
-                currentLight = sunLight;
-            }
-        }
-        
-        void updateDegrees(float deltaAlpha) {
             //solve the proportion for x: deltaAlpha / dayHours = x / 180
-            deltaAlpha *= 5; //convert deltaAlpha to minutes => 1 alpha == 5 minutes
-            float hours = dayHours * 60; //convert dayHours to minutes
-            if (isDay) {
-                degrees += 180f * deltaAlpha / hours;
+            float elapsedDays = sim.getElapsedDays(alpha)*20;
+            int day = (int) elapsedDays;
+            float timeOfDay = elapsedDays - day;
+            float sunAngle = timeOfDay*360;
+            float moonAngle = timeOfDay*360 + 180;
+            float sunIntensity = 2*FastMath.sin(sunAngle*FastMath.DEG_TO_RAD);
+            if (sunIntensity < 0) sunIntensity = 0;
+            float moonIntensity = 0.1f*FastMath.sin(moonAngle*FastMath.DEG_TO_RAD);
+            if (moonIntensity < 0) moonIntensity = 0;
+            float angle;
+            ColorRGBA sunColor = new ColorRGBA(1f, 1f, 1f, 0f);
+            ColorRGBA sunAmbColor = new ColorRGBA(0.7f, 0.9f, 1f, 0f);
+            ColorRGBA moonColor = new ColorRGBA(0.8f, 0.8f, 1f, 0f);
+            ColorRGBA moonAmbColor = new ColorRGBA(1f, 1f, 1f, 0f);
+            if (sunIntensity > moonIntensity) {
+                if (currentLight == moonLight) {
+                    rootNode.removeLight(moonLight);
+                    rootNode.removeLight(moonAmbient);
+                    rootNode.addLight(sunLight);
+                    rootNode.addLight(sunAmbient);
+                    dlsr.setLight(sunLight);
+                    currentLight = sunLight;
+                }
+                sunLight.setColor(sunColor.mult(sunIntensity));
+                sunAmbient.setColor(sunAmbColor.mult(.5f));
+                angle = sunAngle;
+                System.out.println("sun " + angle);
+            } else {
+                if (currentLight == sunLight) {
+                    rootNode.removeLight(sunLight);
+                    rootNode.removeLight(sunAmbient);
+                    rootNode.addLight(moonLight);
+                    rootNode.addLight(moonAmbient);
+                    dlsr.setLight(moonLight);
+                    currentLight = moonLight;
+                }
+               moonLight.setColor(moonColor.mult(moonIntensity));
+               moonAmbient.setColor(moonAmbColor.mult(.5f));
+               angle = moonAngle;
+               System.out.println("moon " + angle);
             }
-            else {
-                degrees += 180f * deltaAlpha / (24f * 60f - hours);
-            }
+            Vector3f dir = new Vector3f(FastMath.cos(angle * FastMath.DEG_TO_RAD), -FastMath.sin(angle * FastMath.DEG_TO_RAD), 0f).normalizeLocal();
+            currentLight.setDirection(dir);
+            water.setLightColor(currentLight.getColor());
+            water.setLightDirection(currentLight.getDirection());
         }
     }
 }
