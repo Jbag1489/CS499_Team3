@@ -92,7 +92,7 @@ class Simulation {
     }
     /** * Gets the decimal number of days that have elapsed since the simulation started.
      * @return the decimal elapsed time */
-    float getElapsedDays(float alpha) {return 5/(60*24)*(timeStep + alpha);}
+    float getElapsedDays(float alpha) {return 5f/(60f*24f)*(timeStep + alpha);}
     /** * Gets the integer number of days, hours, and minuts that have elapsed since the simulation started.
      * @return the integer elapsed time */
     TimeInterval getElapsedTime(float alpha) {return new TimeInterval(getElapsedDays(alpha));}
