@@ -11,14 +11,17 @@
             <!-- <image filename="Interface/tutorial/start-background.png"></image> -->
         </layer>
         <layer id="foreground" backgroundColor="#0000" childLayout="vertical">
-            
+            <panel id="top_spacer" height="2%" />
             <panel id="panel_top" height="5%" width="75%" align="center" childLayout="center">  
-                <text text="&#10;Somali Pirate Simulation" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />
+                <image filename="Interface/somali.png" />
+                <!--<text text="&#10;Somali Pirate Simulation" font="Interface/Fonts/Default.fnt" width="100%" height="100%" />-->
             </panel>
             
             <panel id="panel_mid" height="45%" width="75%" align="center" childLayout="center">       
                 <!-- &#10; for new line!! -->
-                <text text="The International Maritime Bureau has commisioned a simulation to decrease 
+                <text text="
+&#10;
+The International Maritime Bureau has commisioned a simulation to decrease 
 the attacks of cargo ships by Somalian pirates in the Gulf of Aden. The attacks were carried out 
 nearly daily, and something needs to be done. This simulation will be the first step to finding ways 
 to avoid Somali Pirate Attacks.
@@ -55,7 +58,7 @@ Quit will exit the simulation and return you to your desktop.
                       font="Interface/Fonts/Default.fnt" width="100%" height="100%" wrap="true" />
             </panel>
             
-            <panel id="panel_bottom" height="50%" width="75%" align="center" childLayout="vertical"> 
+            <panel id="panel_bottom" height="48%" width="75%" align="center" childLayout="vertical"> 
                 
                 <panel id="start_screen_controls_panel" height="25%" width="75%" align="center" childLayout="horizontal">
                     <panel id="panel_bottom_left" height="50%" width="25%" valign="center" childLayout="center">  
