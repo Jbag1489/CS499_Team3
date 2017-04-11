@@ -10,8 +10,8 @@ import de.lessvoid.nifty.Nifty;
  * Class to create a JME SimplaApplication for the program to run in.
  * Also still under construction so no javadoc for now
  */
-public class Application extends SimpleApplication {
-    private Simulation sim;
+public class PirateSimApp extends SimpleApplication {
+    Simulation sim;
     Scene scene;
     PanCamera panCam; //SimpleApplication's FlyCam is not suitable for this application, so this camera is used
     float timeSinceLastFrame, timeSinceLastTick;
@@ -20,11 +20,11 @@ public class Application extends SimpleApplication {
 
     //program entry point
     public static void main(String[] args) {
-        Application app = new Application();
+        PirateSimApp app = new PirateSimApp();
     }
 
     //initialize application settings
-    Application() {
+    PirateSimApp() {
         //note to Owen:
         //public void setResizable(boolean resizable)
         //Allows the display window to be resized by dragging its edges. Only supported for JmeContext.Type.Display contexts which are in windowed mode, ignored for other types. The default value is false.
@@ -47,7 +47,7 @@ public class Application extends SimpleApplication {
         panCam.register();
         timeSinceLastFrame = 0;
         /* Josh Test Addition */
-        startScreen = new MyStartScreen( sim );
+        startScreen = new MyStartScreen(this);
         stateManager.attach(startScreen);
 
         /**
@@ -67,6 +67,7 @@ public class Application extends SimpleApplication {
     void setSim(Simulation pSim) {
         sim = pSim;
         rootNode.detachAllChildren();
+        viewPort.clearProcessors();
         scene = new Scene(pSim, rootNode, assetManager, viewPort);
     }
     Simulation getSim() {return sim;}
@@ -74,6 +75,7 @@ public class Application extends SimpleApplication {
     //Per frame update function
     @Override
     public void simpleUpdate(float tpf) {
+        if (sim.timeStep == 10) setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, 6545));
         sim.setProbCargo(startScreen.getCargoProb());
         sim.setProbPatrol(startScreen.getPatrolProb());
         sim.setProbPirate(startScreen.getPirateProb());
