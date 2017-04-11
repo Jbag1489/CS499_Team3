@@ -22,9 +22,6 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     private Nifty nifty;
     private Screen screen;
     private Screen screenHud;
-    private SimpleApplication app;
-    static Application myApp = new Application();
-    Simulation simStartScreen;
     long seed;
     float simSpeed = 1; // ties to timeAcceleration in Application
     boolean simPaused = true; // ties to simPaused in Application
@@ -78,21 +75,22 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     boolean singleTick = false;
     Button pauseButton;
 
+    PirateSimApp pApp;
     /**
      * custom methods
      */
     public void startGame(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
         // Simulation(int xSize, int ySize, double cProbNewCargo, double cProbNewPirate, double cProbNewPatrol, long seed)
-        simStartScreen = new Simulation((int) simWidth.getValue(), (int) simHeight.getValue(),
+        Simulation newSim = new Simulation((int) simWidth.getValue(), (int) simHeight.getValue(),
                 (double) cargoProb.getValue(), (double) pirateProb.getValue(),
                 (double) patrolProb.getValue(), seed);
-        
+        pApp.setSim(newSim);
         simPaused = false; // Will start running the simulation
     }
 
     public void quitGame() {
-        myApp.stop();
+        pApp.stop();
     }
 
     public void increaseSpeed() {
@@ -119,7 +117,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         return simSpeed;
     }
 
-    public MyStartScreen(Simulation sim) {
+    public MyStartScreen(PirateSimApp paramsim) {
+        pApp = paramsim;
         /**
          * Your custom constructor, can accept arguments
          */
@@ -165,7 +164,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
 
         simPaused = true;
         singleTick = true;
-        simStartScreen.tick();
+        pApp.sim.tick();
     }
 
     /**
@@ -174,7 +173,6 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
-        myApp = (SimpleApplication) app;
 
         screenHud = nifty.getScreen("hud");
 
