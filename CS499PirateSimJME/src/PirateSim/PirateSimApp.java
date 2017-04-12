@@ -75,7 +75,7 @@ public class PirateSimApp extends SimpleApplication {
     //Per frame update function
     @Override
     public void simpleUpdate(float tpf) {
-        if (sim.timeStep == 10) setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, 6545));
+        //if (sim.timeStep == 10) setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, 6545)); //what?
         sim.setProbCargo(startScreen.getCargoProb());
         sim.setProbPatrol(startScreen.getPatrolProb());
         sim.setProbPirate(startScreen.getPirateProb());

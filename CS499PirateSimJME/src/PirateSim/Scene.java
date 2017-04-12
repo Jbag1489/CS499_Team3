@@ -318,6 +318,7 @@ public class Scene {
         DirectionalLightShadowRenderer dlsr;
         AmbientLight sunAmbient;
         AmbientLight moonAmbient;
+        int sunCounter, moonCounter;
         
         Lighting() {
             sunLight = new DirectionalLight();
@@ -327,7 +328,7 @@ public class Scene {
             moonAmbient = new AmbientLight();
             
             final int SHADOWMAP_SIZE=2048;
-            dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);  
+            dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);
             dlsr.setLight(sunLight);
             viewPort.addProcessor(dlsr);
             
@@ -337,7 +338,11 @@ public class Scene {
             currentLight = sunLight;
             //rootNode.attachChild(lightingNode);
             rootNode.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
+            
+            sunCounter = 0;
+            moonCounter = 0;
         }
+        
         
         void update(float alpha) {
             //solve the proportion for x: deltaAlpha / dayHours = x / 180
@@ -355,8 +360,12 @@ public class Scene {
             ColorRGBA sunAmbColor = new ColorRGBA(0.7f, 0.9f, 1f, 0f);
             ColorRGBA moonColor = new ColorRGBA(0.8f, 0.8f, 1f, 0f);
             ColorRGBA moonAmbColor = new ColorRGBA(1f, 1f, 1f, 0f);
+            
             if (sunIntensity > moonIntensity) {
                 if (currentLight == moonLight) {
+                    //moonCounter = 0;
+                    sunCounter++;
+                    System.out.println("SunCounter: " + Integer.toString(sunCounter));
                     rootNode.removeLight(moonLight);
                     rootNode.removeLight(moonAmbient);
                     rootNode.addLight(sunLight);
@@ -367,9 +376,12 @@ public class Scene {
                 sunLight.setColor(sunColor.mult(sunIntensity));
                 sunAmbient.setColor(sunAmbColor.mult(.5f));
                 angle = sunAngle;
-                System.out.println("sun " + angle);
+                //System.out.println("sun " + angle);
             } else {
                 if (currentLight == sunLight) {
+                    sunCounter = 0;
+                    moonCounter++;
+                    System.out.println("MoonCounter: " + Integer.toString(moonCounter));
                     rootNode.removeLight(sunLight);
                     rootNode.removeLight(sunAmbient);
                     rootNode.addLight(moonLight);
@@ -380,7 +392,7 @@ public class Scene {
                moonLight.setColor(moonColor.mult(moonIntensity));
                moonAmbient.setColor(moonAmbColor.mult(.5f));
                angle = moonAngle;
-               System.out.println("moon " + angle);
+               //System.out.println("moon " + angle);
             }
             Vector3f dir = new Vector3f(FastMath.cos(angle * FastMath.DEG_TO_RAD), -FastMath.sin(angle * FastMath.DEG_TO_RAD), 0f).normalizeLocal();
             currentLight.setDirection(dir);
