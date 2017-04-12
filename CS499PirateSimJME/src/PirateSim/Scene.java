@@ -231,8 +231,7 @@ public class Scene {
 
         Vector3f lightDir = new Vector3f(0, -1, 0);
 
-            //water = new WaterFilter(rootNode, lightDir);
-            water = new WaterFilter();
+            water = new WaterFilter(rootNode, lightDir);
 
             FilterPostProcessor fpp = new FilterPostProcessor(assetMan);
 
