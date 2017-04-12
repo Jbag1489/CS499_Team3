@@ -7,7 +7,7 @@
     <useControls filename="nifty-default-controls.xml" />
 
     <screen id="start" controller="PirateSim.MyStartScreen">
-        <layer id="background" childLayout="center" backgroundColor="#000d">
+        <layer id="background" childLayout="center" backgroundColor="#000b">
             <!-- <image filename="Interface/tutorial/start-background.png"></image> -->
         </layer>
         <layer id="foreground" backgroundColor="#0000" childLayout="vertical">
@@ -156,11 +156,18 @@ Quit will exit the simulation and return you to your desktop.
     </screen>
 
     <screen id="hud" controller="PirateSim.MyStartScreen">
-        <!--
-        <layer id="background" childLayout="center">
-            <image filename="Interface/tutorial/hud-frame.png" imageMode="resize:40,490,110,170,40,560,40,270,40,560,40,40" width="100%" height="100%"/>
+        
+        <layer id="background" childLayout="vertical">
+            <panel id="top_spacer_panelBG" height ="1.5%" childLayout="vertical" />
+
+            <panel id="middle_contentBG" height ="88%" childLayout="horizontal">
+                <panel id="left_spacer" width="1.5%"/>
+                
+                <panel id="statsBG" height="18.75%" width="15.25%" backgroundColor="#000b" childLayout="vertical" />
+            </panel>
+            
         </layer>
-        -->
+        
         <layer id="foreground" backgroundColor="#0000" childLayout="vertical">
             <panel id="top_spacer_panel" height ="2%" childLayout="vertical">
 
@@ -255,7 +262,7 @@ Quit will exit the simulation and return you to your desktop.
                     </panel>
 
                     <panel id="speed_display_panel" height="50%" width="10%" valign="center" childLayout="center">
-                        <control id="speedLabel" name="label" text="      Sim Speed: 1.0      " />
+                        <control id="speedLabel" name="label" text="      Sim Speed: 1.0      " backgroundColor="#000b"/>
                     </panel>
 
                     <panel id="fast_button_panel" height="50%" width="10%" valign="center" childLayout="center">
