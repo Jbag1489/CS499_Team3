@@ -54,8 +54,8 @@ public class Scene {
         assetMan = pAssetMan;
         viewPort = pViewPort;
         boats = new Boats();
-        background = new Background();
         lighting = new Lighting();
+        background = new Background();
     }
     //update all the scene elements, just boats and the background for now
     void update(float alpha) {
@@ -231,7 +231,8 @@ public class Scene {
 
         Vector3f lightDir = new Vector3f(0, -1, 0);
 
-            water = new WaterFilter(rootNode, lightDir);
+            //water = new WaterFilter(rootNode, lightDir);
+            water = new WaterFilter();
 
             FilterPostProcessor fpp = new FilterPostProcessor(assetMan);
 
@@ -326,7 +327,7 @@ public class Scene {
             
             final int SHADOWMAP_SIZE=2048;
             dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);
-            dlsr.setShadowIntensity(0.8f);
+            //dlsr.setShadowIntensity(0.f);
             dlsr.setLight(sunLight);
             viewPort.addProcessor(dlsr);
             
@@ -334,7 +335,7 @@ public class Scene {
             rootNode.addLight(sunLight);
             rootNode.addLight(sunAmbient);
             currentLight = sunLight;
-            //rootNode.attachChild(lightingNode);
+            rootNode.attachChild(lightingNode);
             rootNode.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         }
         
@@ -367,7 +368,7 @@ public class Scene {
                     currentLight = sunLight;
                 }
                 sunLight.setColor(sunColor.mult(sunIntensity / 2.5f));
-                sunAmbient.setColor(sunAmbColor.mult(.05f));
+                sunAmbient.setColor(sunAmbColor.mult(1f));
                 angle = sunAngle;
                 //System.out.println("sun " + angle);
             } else {
@@ -379,8 +380,8 @@ public class Scene {
                     dlsr.setLight(moonLight);
                     currentLight = moonLight;
                 }
-               moonLight.setColor(moonColor.mult(moonIntensity));
-               moonAmbient.setColor(moonAmbColor.mult(.1f));
+               moonLight.setColor(moonColor.mult(moonIntensity / 3f));
+               moonAmbient.setColor(moonAmbColor.mult(.01f));
                angle = moonAngle;
                //System.out.println("moon " + angle);
             }
