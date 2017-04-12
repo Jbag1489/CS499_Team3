@@ -248,25 +248,24 @@ public class Scene {
 
             // fpp.setNumSamples(4);
 
-
             water.setWaveScale(0.03f);
             water.setMaxAmplitude(0.5f);
             water.setFoamExistence(new Vector3f(1f, 4, 0.1f));
+            water.setFoamHardness(1f);
+            water.setFoamIntensity(1f);
             water.setFoamTexture((Texture2D) assetMan.loadTexture("Common/MatDefs/Water/Textures/foam2.jpg"));
             water.setNormalScale(20f);
-            water.setShininess(0.15f);
+            water.setShininess(0.2f);
             //water.setSunScale(1f);
             water.setColorExtinction(new Vector3f(2f, 5f, 6f));
-            water.setDeepWaterColor(new ColorRGBA(0.03f, 0.06f, 0.1f, 1f));
+            //water.setDeepWaterColor(new ColorRGBA(0.03f, 0.06f, 0.1f, 1f));
             water.setRadius(SEA_BORDER_SIZE);
             water.setWaterColor(new ColorRGBA(0.4f, 0.9f, 1f, 1f));
             water.setWindDirection(Vector2f.UNIT_XY);
             water.setRefractionConstant(0.25f);
             water.setRefractionStrength(0.1f);
             //water.setFoamHardness(0.6f);
-
             water.setWaterHeight(0f);
-            
             
             Spatial terrain = assetMan.loadModel("Models/terrain/terrain.j3o");
             Material terrainMat = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
@@ -295,7 +294,6 @@ public class Scene {
             gridGeom.setMaterial(matGrid);
             //gridGeom.center().getLocalTranslation().set(0.0f, 0*sim.size.y, 0.01f);
             //gridGeom.getLocalRotation().fromAngles(FastMath.PI/2, 0f, 0f);
-
             backgroundNode = new Node("background");
             rootNode.attachChild(backgroundNode);
             backgroundNode.attachChild(terrain);
@@ -327,7 +325,8 @@ public class Scene {
             moonAmbient = new AmbientLight();
             
             final int SHADOWMAP_SIZE=2048;
-            dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);  
+            dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);
+            dlsr.setShadowIntensity(0.8f);
             dlsr.setLight(sunLight);
             viewPort.addProcessor(dlsr);
             
@@ -339,9 +338,10 @@ public class Scene {
             rootNode.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         }
         
+        
         void update(float alpha) {
             //solve the proportion for x: deltaAlpha / dayHours = x / 180
-            float elapsedDays = sim.getElapsedDays(alpha)*20;
+            float elapsedDays = sim.getElapsedDays(alpha);//*20;
             int day = (int) elapsedDays;
             float timeOfDay = elapsedDays - day;
             float sunAngle = timeOfDay*360;
@@ -355,6 +355,8 @@ public class Scene {
             ColorRGBA sunAmbColor = new ColorRGBA(0.7f, 0.9f, 1f, 0f);
             ColorRGBA moonColor = new ColorRGBA(0.8f, 0.8f, 1f, 0f);
             ColorRGBA moonAmbColor = new ColorRGBA(1f, 1f, 1f, 0f);
+            ColorRGBA maxDeepWaterColor = new ColorRGBA(0.2039f, 1.25196f, 1.645f, 0f);
+            
             if (sunIntensity > moonIntensity) {
                 if (currentLight == moonLight) {
                     rootNode.removeLight(moonLight);
@@ -364,10 +366,10 @@ public class Scene {
                     dlsr.setLight(sunLight);
                     currentLight = sunLight;
                 }
-                sunLight.setColor(sunColor.mult(sunIntensity));
-                sunAmbient.setColor(sunAmbColor.mult(.5f));
+                sunLight.setColor(sunColor.mult(sunIntensity / 2.5f));
+                sunAmbient.setColor(sunAmbColor.mult(.05f));
                 angle = sunAngle;
-                System.out.println("sun " + angle);
+                //System.out.println("sun " + angle);
             } else {
                 if (currentLight == sunLight) {
                     rootNode.removeLight(sunLight);
@@ -378,14 +380,17 @@ public class Scene {
                     currentLight = moonLight;
                 }
                moonLight.setColor(moonColor.mult(moonIntensity));
-               moonAmbient.setColor(moonAmbColor.mult(.5f));
+               moonAmbient.setColor(moonAmbColor.mult(.1f));
                angle = moonAngle;
-               System.out.println("moon " + angle);
+               //System.out.println("moon " + angle);
             }
             Vector3f dir = new Vector3f(FastMath.cos(angle * FastMath.DEG_TO_RAD), -FastMath.sin(angle * FastMath.DEG_TO_RAD), 0f).normalizeLocal();
             currentLight.setDirection(dir);
             water.setLightColor(currentLight.getColor());
             water.setLightDirection(currentLight.getDirection());
+            //sunIntensity needs to be divided by what it's multiplied by, sort of
+            ColorRGBA temp = new ColorRGBA(maxDeepWaterColor.r * sunIntensity / 3f, maxDeepWaterColor.g * sunIntensity / 3f, maxDeepWaterColor.b * sunIntensity / 3f, 1.0f);
+            water.setDeepWaterColor(temp);
         }
     }
 }
