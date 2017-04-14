@@ -57,7 +57,7 @@ public class PirateSimApp extends SimpleApplication {
                 assetManager, inputManager, audioRenderer, guiViewPort);
         Nifty nifty = niftyDisplay.getNifty();
         guiViewPort.addProcessor(niftyDisplay);
-        nifty.fromXml("Interface/newNiftyGui.xml", "start", startScreen);
+        nifty.fromXml("Interface/newNiftyGui2.xml", "start", startScreen);
         //nifty.setDebugOptionPanelColors(true);
 
         //Note to Josh: panCamera is currently controlling FlyCam and sets this value.
