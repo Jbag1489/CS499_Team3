@@ -28,8 +28,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     boolean singleStep = false;
     // Initialize to true, when start is pressed, it will "unpause"
     // Objects for XML Control
-    int width = 20;
-    int height = 10;
+    int width;
+    int height;
     private Slider simWidth;
     private Slider simHeight;
     private Slider cargoProb;
@@ -76,8 +76,11 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     Button pauseButton;
 
     PirateSimApp pApp;
+    
+    
     /**
-     * custom methods
+     * startGame is what will be processed when the user clicks the "Start Simulation" button.
+     * @param nextScreen A string containing the name to advance the NiftyGUI to.
      */
     public void startGame(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
@@ -89,10 +92,16 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         simPaused = false; // Will start running the simulation
     }
 
+    /**
+     * Stops the simulation and exits.
+     */
     public void quitGame() {
         pApp.stop();
     }
 
+    /**
+     * Increases the running speed of the simulation when "Speed Up" button is clicked.
+     */
     public void increaseSpeed() {
         if (speedIndex + 1 == simSpeeds.length) {
             // Speed is at maximum, so do nothing
@@ -103,6 +112,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         }
     }
 
+    /**
+     * Decreases the running speed of the simulation when "Slow Down" button is clicked.
+     */
     public void decreaseSpeed() {
         if (speedIndex == 0) {
             // Speed is at minimum, so do nothing
@@ -113,21 +125,26 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         }
     }
 
+    /**
+     * Provides the simulation speed.
+     * @return A float containing the speed the simulation is running at.
+     */
     public float getSimSpeed() {
         return simSpeed;
     }
 
+    /**
+     * Constructor for MyStartScreen
+     * @param paramsim A reference to the JMonkey application
+     */
     public MyStartScreen(PirateSimApp paramsim) {
         pApp = paramsim;
-        /**
-         * Your custom constructor, can accept arguments
-         */
-        /*
-         this.simStartScreen = sim;
-         this.seed = sim.seed;
-         */
+        
     }
 
+    /**
+     * Toggles the simulation between paused and running.
+     */
     public void changePauseState() {
         if (simPaused) {
             simPaused = false;
@@ -139,7 +156,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     }
 
     /**
-     * Nifty GUI ScreenControl methods
+     * Binds the screen controller to the NiftyGUI XML
+     * @param nifty A NiftyGUI control object
+     * @param screen A NiftyGUI screen that will be used
      */
     public void bind(Nifty nifty, Screen screen) {
         this.nifty = nifty;
@@ -147,12 +166,21 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
 
     }
 
+    /**
+     * Controls what happens when the start screen is loaded.
+     */
     public void onStartScreen() {
     }
 
+    /**
+     * Controls what happens when the ending screen is loaded.
+     */
     public void onEndScreen() {
     }
 
+    /**
+     * Reads the current simulation speed and updates label to match.
+     */
     private void updateSpeedLabel() {
         String speedLabelText = "Sim Speed: " + simSpeeds[speedIndex];
         System.out.println("Sim speed changed to "
@@ -160,6 +188,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         simSpeedLabel.setText(speedLabelText);
     }
 
+    /**
+     * Pauses the simulation if running, and then advances a single tick.
+     */
     public void advanceSingleTick() {
 
         simPaused = true;
@@ -168,7 +199,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     }
 
     /**
-     * jME3 AppState methods
+     * Initializes all control objects that the GUI will use.
+     * @param stateManager Reference to object to control the state of the application.
+     * @param app Reference to the application that is running.
      */
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
@@ -235,7 +268,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         simWidth.setMax((float) 400);
         simWidth.setMin((float) 10);
         simWidth.setStepSize((float) 10);
-        simWidth.setValue((float) 20);
+        simWidth.setValue((float) 40);
         simWidth.setButtonStepSize((float) 10);
 
         simHeight.setMax((float) 100);
@@ -270,50 +303,74 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         cargoRescuedString = "There have been 0 ship rescues.";
         pirateDefeatedString = "There have been 0 pirates have been defeated.";
         timeStepsString = "There have been 0 time steps.";
-        
-//        pirateEnteredLabel.setText(pirateEnteredString);
-//        pirateExitLabel.setText(pirateExitString);
-//        patrolEnteredLabel.setText(patrolEnteredString);
-//        patrolExitLabel.setText(pirateExitString);
-//        cargoEnteredLabel.setText(cargoEnteredString);
-//        cargoExitedLabel.setText(cargoExitedString);
-//        cargoCapturedLabel.setText(cargoCapturedString);
-//        cargoRescuedLabel.setText(cargoRescuedString);
-//        pirateDefeatedLabel.setText(pirateDefeatedString);
-//        timeStepsLabel.setText(timeStepsString);
 
     }
 
+    /**
+     * Returns the probability that a cargo ship will spawn each simulation tick.
+     * @return The probability that a cargo ship will spawn each simulation tick.
+     */
     public double getCargoProb() {
         return (double) this.cargoProb.getValue();
     }
 
+    /**
+     * Returns the probability that a patrol ship will spawn each simulation tick.
+     * @return The probability that a patrol ship will spawn each simulation tick.
+     */
     public double getPatrolProb() {
         return (double) this.patrolProb.getValue();
     }
 
+    /**
+     * Returns the probability that a pirate ship will spawn each simulation tick.
+     * @return The probability that a pirate ship will spawn each simulation tick.
+     */
     public double getPirateProb() {
         return (double) this.pirateProb.getValue();
     }
 
+    /**
+     * Listener to change values when Cargo Slider Probability is changed
+     * @param id String containing the ID of the element in the XML representaion of GUI
+     * @param event The event to listen for changes on.
+     */
     @NiftyEventSubscriber(id = "cargoSlider")
     public void onCargoSliderChangedEvent(String id, SliderChangedEvent event) {
         cargoLabelText = "Cargo Probability: " + String.format("%.2f", cargoProb.getValue());
         cargoLabel.setText(cargoLabelText);
     }
 
+    
+    /**
+     * Listener to change values when Patrol Slider Probability is changed
+     * @param id String containing the ID of the element in the XML representaion of GUI
+     * @param event The event to listen for changes on.
+     */
     @NiftyEventSubscriber(id = "patrolSlider")
     public void onPatrolSliderChangedEvent(String id, SliderChangedEvent event) {
         patrolLabelText = "Patrol Probability: " + String.format("%.2f", patrolProb.getValue());
         patrolLabel.setText(patrolLabelText);
     }
 
+    
+    /**
+     * Listener to change values when Pirate Slider Probability is changed
+     * @param id String containing the ID of the element in the XML representaion of GUI
+     * @param event The event to listen for changes on.
+     */
     @NiftyEventSubscriber(id = "pirateSlider")
     public void onPirateSliderChangedEvent(String id, SliderChangedEvent event) {
         pirateLabelText = "Pirate Probability: " + String.format("%.2f", pirateProb.getValue());
         pirateLabel.setText(pirateLabelText);
     }
 
+    
+    /**
+     * Listener to change values when simulation width is changed
+     * @param id String containing the ID of the element in the XML representaion of GUI
+     * @param event The event to listen for changes on.
+     */
     @NiftyEventSubscriber(id = "widthSlider")
     public void onWidthSliderChangedEvent(String id, SliderChangedEvent event) {
         width = (int) simWidth.getValue();
@@ -321,6 +378,11 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         widthLabel.setText(witdthSliderLabelText);
     }
 
+    /**
+     * Listener to change values when simulation height is changed
+     * @param id String containing the ID of the element in the XML representaion of GUI
+     * @param event The event to listen for changes on.
+     */
     @NiftyEventSubscriber(id = "heightSlider")
     public void onHeightSliderChangedEvent(String id, SliderChangedEvent event) {
         height = (int) simHeight.getValue();
@@ -328,14 +390,26 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         heightLabel.setText(witdthSliderLabelText);
     }
 
+    /**
+     * Returns an integer containing the width of simulation representing miles.
+     * @return An integer containing the width of the simulation.
+     */
     int getWidth() {
         return width;
     }
 
+    /**
+     * Returns an integer containing the height of simulation representing miles.
+     * @return An integer containing the height of the simulation.
+     */    
     int getHeight() {
         return height;
     }
 
+    /**
+     * NOT USED. Handled by PirateSimApp.java
+     * @param tpf 
+     */
     @Override
     public void update(float tpf) {
         /**
@@ -343,52 +417,91 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
          */
     }
 
-    // Setters for statistic strings
+    /**
+     * Update the label for pirates entering the simulation.
+     * @param num The number of pirates that have entered the simulation.
+     */
     public void setPirateEnteredString(int num) {
         this.pirateEnteredString = num + " pirate ships have entered the simulation.";
         pirateEnteredLabel.setText(pirateEnteredString);
     }
 
+    /**
+     * Update the label for pirates exiting the simulation.
+     * @param num The number of pirates that have exited the simulation.
+     */
     public void setPirateExitedString(int num) {
         this.pirateExitString = num + " pirate ships have exited the simulation.";
         pirateExitLabel.setText(pirateExitString);
     }
 
+    /**
+     * Update the label for patrols entering the simulation.
+     * @param num The number of patrols that have entered the simulation.
+     */
     public void setPatrolEnteredString(int num) {
         this.patrolEnteredString = num + " patrol ships have entered the simulation.";
         patrolEnteredLabel.setText(patrolEnteredString);
     }
 
+    /**
+     * Update the label for patrols exiting the simulation.
+     * @param num The number of patrols that have exited the simulation.
+     */
     public void setPatrolExitedString(int num) {
         this.patrolExitString = num + " patrol ships have exited the simulation.";
         patrolExitLabel.setText(patrolExitString);
     }
 
+    /**
+     * Update the label for cargo ships entering the simulation.
+     * @param num The number of cargo ships that have entered the simulation.
+     */
     public void setCargoEnteredString(int num) {
         this.cargoEnteredString = num + " cargo ships have entered the simulation.";
         cargoEnteredLabel.setText(cargoEnteredString);
     }
 
+    /**
+     * Update the label for cargo ships exiting the simulation.
+     * @param num The number of cargo ships that have exited the simulation.
+     */
     public void setCargoExitedString(int num) {
         this.cargoExitedString = num + " cargo ships have exited the simulation.";
         cargoExitedLabel.setText(cargoExitedString);
     }
 
+    /**
+     * Update the label for the number of cargo ships captured.
+     * @param num The number of cargo ships captured.
+     */
     public void setCargoCapturedString(int num) {
         this.cargoCapturedString = "There have been " + num + " ship captures.";
         cargoCapturedLabel.setText(cargoCapturedString);
     }
 
+    /**
+     * Update the label for cargo ships rescued by patrols.
+     * @param num The number of cargo ships rescued.
+     */
     public void setCargoRescuedString(int num) {
         this.cargoRescuedString = "There have been " + num + " ship rescues.";
         cargoRescuedLabel.setText(cargoRescuedString);
     }
 
+    /**
+     * Update the label displaying how many pirates have been defeated by patrols.
+     * @param num The number of pirates defeated.
+     */
     public void setPirateDefeatedString(int num) {
         this.pirateDefeatedString = "There have been " + num + " pirates have been defeated.";
         pirateDefeatedLabel.setText(pirateDefeatedString);
     }
 
+    /**
+     * Update the label showing how many time steps have elapsed.
+     * @param num The number of elapsed time steps.
+     */
     public void setTimeStepsString(int num) {
         this.timeStepsString = "There have been " + num + " time steps.";
         timeStepsLabel.setText(timeStepsString);
