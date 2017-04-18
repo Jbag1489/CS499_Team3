@@ -8,9 +8,9 @@ import de.lessvoid.nifty.Nifty;
 
 /**
  * Class to create a JME SimplaApplication for the program to run in.
- * Also still under construction so no javadoc for now
  */
 public class PirateSimApp extends SimpleApplication {
+
     Simulation sim;
     Scene scene;
     PanCamera panCam; //SimpleApplication's FlyCam is not suitable for this application, so this camera is used
@@ -18,12 +18,19 @@ public class PirateSimApp extends SimpleApplication {
     static final int targetFPS = 30;
     private MyStartScreen startScreen;
 
-    //program entry point
+    /**
+     * Entry point for the program. Will create a new instance of PirateSimApp
+     * to run the simulation.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         PirateSimApp app = new PirateSimApp();
     }
 
-    //initialize application settings
+    /**
+     * Initilizes all the settings for the application to run.
+     */
     PirateSimApp() {
         //note to Owen:
         //public void setResizable(boolean resizable)
@@ -39,7 +46,10 @@ public class PirateSimApp extends SimpleApplication {
         start();
     }
 
-    //initialize application controlled objects like the simulation state (sim), the scene controller (scene), the camera, the GUI, etc.
+    /**
+     * Initilize application controlled objects such as the sim state, the
+     * screen controller, the camera, the GUI, etc.
+     */
     @Override
     public void simpleInitApp() {
         setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, 6545));
@@ -51,78 +61,98 @@ public class PirateSimApp extends SimpleApplication {
         stateManager.attach(startScreen);
 
         /**
-         * Åctivate the Nifty-JME integration:
+         * Activate the Nifty-JME integration:
          */
         NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(
                 assetManager, inputManager, audioRenderer, guiViewPort);
         Nifty nifty = niftyDisplay.getNifty();
         guiViewPort.addProcessor(niftyDisplay);
-        nifty.fromXml("Interface/newNiftyGui2.xml", "start", startScreen);
+        nifty.fromXml("Interface/newNiftyGui.xml", "start", startScreen);
         //nifty.setDebugOptionPanelColors(true);
 
         //Note to Josh: panCamera is currently controlling FlyCam and sets this value.
         //flyCam.setDragToRotate(true); // you need the mouse for clicking now       
     }
-    
+
+    /**
+     * Allows the simulation to be replaced while the application is running.
+     *
+     * @param pSim Reference to the new simulation object.
+     */
     void setSim(Simulation pSim) {
         sim = pSim;
         rootNode.detachAllChildren();
         viewPort.clearProcessors();
         scene = new Scene(pSim, rootNode, assetManager, viewPort);
     }
-    Simulation getSim() {return sim;}
 
-    //Per frame update function
+    /**
+     * Get the simulation object.
+     *
+     * @return A reference to the simulation running in the application.
+     */
+    Simulation getSim() {
+        return sim;
+    }
+
+    /**
+     * Perform these steps and update the displayed frame.
+     *
+     * @param tpf Floating point representing milliseconds per frame
+     */
     @Override
     public void simpleUpdate(float tpf) {
-        //if (sim.timeStep == 10) setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, 6545)); //what?
+
         sim.setProbCargo(startScreen.getCargoProb());
         sim.setProbPatrol(startScreen.getPatrolProb());
         sim.setProbPirate(startScreen.getPirateProb());
-        if (startScreen.singleStep) {
-            startScreen.singleStep = false;
-            startScreen.simPaused = true;
-            sim.tick();
-            timeSinceLastTick = 0;
-            timeSinceLastFrame = 0;
-            scene.update(0);
-        }
-        //Fun code to compute which simulation timestep should be rendered at which alpha
-        if (!startScreen.simPaused) {
-            timeSinceLastTick += tpf;
-            timeSinceLastFrame += tpf;
-            float simSpeed = startScreen.getSimSpeed();
-            //continue ticking the simulation until timeSinceLastTick is less than the length of a tick (1/timeAcceleration, since ticks are one second each).
-            while (timeSinceLastTick > 1/simSpeed) {
-                sim.tick();
-                timeSinceLastTick -= 1/simSpeed;
-            }
-            float alpha = timeSinceLastTick*simSpeed;
-            updateStatisticStrings();
-            //update the scene now that the simulation state is correct and alpha has been found
-            scene.update(alpha);
-        }
-        
+
         if (startScreen.singleTick) {
             timeSinceLastTick = 0;
             timeSinceLastFrame = 0;
             float simSpeed = startScreen.getSimSpeed();
             //continue ticking the simulation until timeSinceLastTick is less than the length of a tick (1/timeAcceleration, since ticks are one second each).
             sim.tick();
-            float alpha = timeSinceLastTick*simSpeed;
+            float alpha = timeSinceLastTick * simSpeed;
             //update the scene now that the simulation state is correct and alpha has been found
             scene.update(alpha);
             updateStatisticStrings();
-            
+
             startScreen.singleTick = false;
+            startScreen.simPaused = true;
         }
+
+        // If the start screen is not paused, run this update loop.
+        if (!startScreen.simPaused) {
+            timeSinceLastTick += tpf;
+            timeSinceLastFrame += tpf;
+            float simSpeed = startScreen.getSimSpeed();
+            //continue ticking the simulation until timeSinceLastTick is less than the length of a tick (1/timeAcceleration, since ticks are one second each).
+            while (timeSinceLastTick > 1 / simSpeed) {
+                sim.tick();
+                timeSinceLastTick -= 1 / simSpeed;
+            }
+            float alpha = timeSinceLastTick * simSpeed;
+            updateStatisticStrings();
+            //update the scene now that the simulation state is correct and alpha has been found
+            scene.update(alpha);
+        }
+
     }
-    
+
     //We hopefully we will not need to use this
+    /**
+     * For additional rendering control
+     * @param rm Rendermanager if more control is needed.
+     */
     @Override
-    public void simpleRender(RenderManager rm) {}
-    
-    public void updateStatisticStrings(){
+    public void simpleRender(RenderManager rm) {
+    }
+
+    /**
+     * Updates all the statistic that are being displayed.
+     */
+    public void updateStatisticStrings() {
         startScreen.setCargoEnteredString(sim.shipsEntered[sim.CARGO]);
         startScreen.setPatrolEnteredString(sim.shipsEntered[sim.PATROL]);
         startScreen.setPirateEnteredString(sim.shipsEntered[sim.PIRATE]);
@@ -133,6 +163,5 @@ public class PirateSimApp extends SimpleApplication {
         startScreen.setCargoRescuedString(sim.rescues);
         startScreen.setPirateDefeatedString(sim.defeats);
         startScreen.setTimeStepsString(sim.timeStep);
-        
     }
 }

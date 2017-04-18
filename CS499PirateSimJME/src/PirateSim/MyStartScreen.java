@@ -17,6 +17,9 @@ import de.lessvoid.nifty.controls.SliderChangedEvent;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
+/**
+ * Class that will be a controller for NiftyGUI created with newNiftyGui.xml
+ */
 public class MyStartScreen extends AbstractAppState implements ScreenController {
 
     private Nifty nifty;
@@ -25,7 +28,6 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     long seed;
     float simSpeed = 1; // ties to timeAcceleration in Application
     boolean simPaused = true; // ties to simPaused in Application
-    boolean singleStep = false;
     // Initialize to true, when start is pressed, it will "unpause"
     // Objects for XML Control
     int width;
@@ -192,10 +194,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * Pauses the simulation if running, and then advances a single tick.
      */
     public void advanceSingleTick() {
-
         simPaused = true;
         singleTick = true;
-        pApp.sim.tick();
     }
 
     /**
