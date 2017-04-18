@@ -103,10 +103,6 @@ public class PirateSimApp extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
 
-        sim.setProbCargo(startScreen.getCargoProb());
-        sim.setProbPatrol(startScreen.getPatrolProb());
-        sim.setProbPirate(startScreen.getPirateProb());
-
         if (startScreen.singleTick) {
             timeSinceLastTick = 0;
             timeSinceLastFrame = 0;
