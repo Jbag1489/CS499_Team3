@@ -5,7 +5,6 @@
 package PirateSim;
 
 import com.jme3.app.Application;
-import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import de.lessvoid.nifty.Nifty;
@@ -543,12 +542,12 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * Updates all the statistic that are being displayed.
      */
     public void updateStatisticStrings() {
-        setCargoEnteredString(pApp.sim.shipsEntered[pApp.sim.CARGO]);
-        setPatrolEnteredString(pApp.sim.shipsEntered[pApp.sim.PATROL]);
-        setPirateEnteredString(pApp.sim.shipsEntered[pApp.sim.PIRATE]);
-        setCargoExitedString(pApp.sim.shipsExited[pApp.sim.CARGO]);
-        setPatrolExitedString(pApp.sim.shipsExited[pApp.sim.PATROL]);
-        setPirateExitedString(pApp.sim.shipsExited[pApp.sim.PIRATE]);
+        setCargoEnteredString(pApp.sim.shipsEntered[Simulation.CARGO]);
+        setPatrolEnteredString(pApp.sim.shipsEntered[Simulation.PATROL]);
+        setPirateEnteredString(pApp.sim.shipsEntered[Simulation.PIRATE]);
+        setCargoExitedString(pApp.sim.shipsExited[Simulation.CARGO]);
+        setPatrolExitedString(pApp.sim.shipsExited[Simulation.PATROL]);
+        setPirateExitedString(pApp.sim.shipsExited[Simulation.PIRATE]);
         setCargoCapturedString(pApp.sim.captures);
         setCargoRescuedString(pApp.sim.rescues);
         setPirateDefeatedString(pApp.sim.defeats);
