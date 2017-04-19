@@ -17,6 +17,7 @@ public class PirateSimApp extends SimpleApplication {
     float timeSinceLastFrame, timeSinceLastTick;
     static final int targetFPS = 30;
     private MyStartScreen startScreen;
+    final long DEFAULT_SEED = 6545;
 
     /**
      * Entry point for the program. Will create a new instance of PirateSimApp
@@ -52,7 +53,7 @@ public class PirateSimApp extends SimpleApplication {
      */
     @Override
     public void simpleInitApp() {
-        setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, 6545));
+        setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, DEFAULT_SEED));
         panCam = new PanCamera(cam, inputManager, getFlyByCamera());
         panCam.register();
         timeSinceLastFrame = 0;

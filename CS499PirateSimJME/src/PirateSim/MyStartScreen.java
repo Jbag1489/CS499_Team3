@@ -14,6 +14,7 @@ import de.lessvoid.nifty.controls.Button;
 import de.lessvoid.nifty.controls.Label;
 import de.lessvoid.nifty.controls.Slider;
 import de.lessvoid.nifty.controls.SliderChangedEvent;
+import de.lessvoid.nifty.controls.TextField;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
@@ -22,10 +23,11 @@ import de.lessvoid.nifty.screen.ScreenController;
  */
 public class MyStartScreen extends AbstractAppState implements ScreenController {
 
+    final long DEFAULT_SEED = 6545;
+    
     private Nifty nifty;
     private Screen screen;
     private Screen screenHud;
-    long seed;
     float simSpeed = 1; // ties to timeAcceleration in Application
     boolean simPaused = true; // ties to simPaused in Application
     // Initialize to true, when start is pressed, it will "unpause"
@@ -78,6 +80,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     Label timeStepsLabel;
     boolean singleTick = false;
     Button pauseButton;
+    
+    long seed;
+    TextField seedTextField;
 
     PirateSimApp pApp;
 
@@ -88,7 +93,14 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      */
     public void startGame(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
-        // Simulation(int xSize, int ySize, double cProbNewCargo, double cProbNewPirate, double cProbNewPatrol, long seed)
+        
+        if (seedTextField.getDisplayedText().equals("")){
+            seed = DEFAULT_SEED;
+        }
+        else{
+            seed = (long)seedTextField.getDisplayedText().hashCode();
+        }
+        
         Simulation newSim = new Simulation((int) simWidth.getValue(), (int) simHeight.getValue(),
                 (double) cargoProb.getValue(), (double) pirateProb.getValue(),
                 (double) patrolProb.getValue(), seed);
@@ -235,6 +247,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         
 
         pauseButton = screenHud.findNiftyControl("PauseButton", Button.class);
+        
+        seedTextField = screen.findNiftyControl("seed", TextField.class);
 
         // Initialize simulation to 1x speed.
         speedIndex = 4;
