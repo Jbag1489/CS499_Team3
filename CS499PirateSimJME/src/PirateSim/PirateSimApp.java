@@ -112,7 +112,7 @@ public class PirateSimApp extends SimpleApplication {
             float alpha = timeSinceLastTick * simSpeed;
             //update the scene now that the simulation state is correct and alpha has been found
             scene.update(alpha);
-            updateStatisticStrings();
+            startScreen.updateStatisticStrings();
 
             startScreen.singleTick = false;
             startScreen.simPaused = true;
@@ -129,7 +129,7 @@ public class PirateSimApp extends SimpleApplication {
                 timeSinceLastTick -= 1 / simSpeed;
             }
             float alpha = timeSinceLastTick * simSpeed;
-            updateStatisticStrings();
+            startScreen.updateStatisticStrings();
             //update the scene now that the simulation state is correct and alpha has been found
             scene.update(alpha);
         }
@@ -143,21 +143,5 @@ public class PirateSimApp extends SimpleApplication {
      */
     @Override
     public void simpleRender(RenderManager rm) {
-    }
-
-    /**
-     * Updates all the statistic that are being displayed.
-     */
-    public void updateStatisticStrings() {
-        startScreen.setCargoEnteredString(sim.shipsEntered[sim.CARGO]);
-        startScreen.setPatrolEnteredString(sim.shipsEntered[sim.PATROL]);
-        startScreen.setPirateEnteredString(sim.shipsEntered[sim.PIRATE]);
-        startScreen.setCargoExitedString(sim.shipsExited[sim.CARGO]);
-        startScreen.setPatrolExitedString(sim.shipsExited[sim.PATROL]);
-        startScreen.setPirateExitedString(sim.shipsExited[sim.PIRATE]);
-        startScreen.setCargoCapturedString(sim.captures);
-        startScreen.setCargoRescuedString(sim.rescues);
-        startScreen.setPirateDefeatedString(sim.defeats);
-        startScreen.setTimeStepsString(sim.timeStep);
     }
 }

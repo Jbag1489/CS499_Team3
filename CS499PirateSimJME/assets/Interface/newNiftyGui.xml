@@ -72,7 +72,7 @@ Quit will exit the simulation and return you to your desktop.
                     <panel id="quitButtonPanel" height="50%" width="25%" valign="center" childLayout="center">
                         <control name="button" label="Quit" id="QuitButton" align="center" valign="center"
                                  visibleToMouse="true" >
-                            <interact onClick="quitGame()"/>
+                            <interact onClick="quitSim()"/>
                         </control>
                     </panel>
                 </panel>
@@ -256,10 +256,17 @@ Quit will exit the simulation and return you to your desktop.
                         </control>
                     </panel>
 
+                    <panel id="return_to_menu_button_panel" height="50%" width="10%" valign="center" childLayout="center">
+                        <control name="button" label="Return to Menu" id="hudReturnToMenu"  valign="center"
+                                 visibleToMouse="true">
+                            <interact onClick="quitToMenu()"/>
+                        </control>
+                    </panel>
+                    
                     <panel id="quit_button_panel" height="50%" width="10%" valign="center" childLayout="center">
                         <control name="button" label="Quit" id="hudQuit"  valign="center"
                                  visibleToMouse="true">
-                            <interact onClick="quitGame()"/>
+                            <interact onClick="quitSim()"/>
                         </control>
                     </panel>
 

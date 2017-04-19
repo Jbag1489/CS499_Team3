@@ -37,8 +37,10 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     private Slider cargoProb;
     private Slider patrolProb;
     private Slider pirateProb;
-    private int speedIndex = 0;
+    
+    private int speedIndex = 4;
     private float[] simSpeeds;
+    
     private Label simSpeedLabel;
     Label cargoLabel;
     Label patrolLabel;
@@ -78,8 +80,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     Button pauseButton;
 
     PirateSimApp pApp;
-    
-    
+
+
     /**
      * startGame is what will be processed when the user clicks the "Start Simulation" button.
      * @param nextScreen A string containing the name to advance the NiftyGUI to.
@@ -97,8 +99,12 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     /**
      * Stops the simulation and exits.
      */
-    public void quitGame() {
+    public void quitSim() {
         pApp.stop();
+    }
+    
+    public void quitToMenu(){
+        nifty.gotoScreen("start");
     }
 
     /**
@@ -141,7 +147,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      */
     public MyStartScreen(PirateSimApp paramsim) {
         pApp = paramsim;
-        
+
     }
 
     /**
@@ -196,6 +202,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     public void advanceSingleTick() {
         simPaused = true;
         singleTick = true;
+        pauseButton.setText("Unpause");
     }
 
     /**
@@ -210,16 +217,24 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         screenHud = nifty.getScreen("hud");
 
         // Initialize array of speeds
-        simSpeeds = new float[4];
-        simSpeeds[0] = (float) 1.0;
-        simSpeeds[1] = (float) 2.0;
-        simSpeeds[2] = (float) 5.0;
-        simSpeeds[3] = (float) 10.0;
+        simSpeeds = new float[11];
+        simSpeeds[0] = (float) .01;
+        simSpeeds[1] = (float) .1;
+        simSpeeds[2] = (float) .25;
+        simSpeeds[3] = (float) .5;
+        simSpeeds[4] = (float) 1.0;
+        simSpeeds[5] = (float) 2.0;
+        simSpeeds[6] = (float) 5.0;
+        simSpeeds[7] = (float) 10.0;
+        simSpeeds[8] = (float) 25.0;
+        simSpeeds[9] = (float) 50.0;
+        simSpeeds[10] = (float) 100.0;
         
+
         pauseButton = screenHud.findNiftyControl("PauseButton", Button.class);
 
         // Initialize simulation to 1x speed.
-        speedIndex = 0;
+        speedIndex = 4;
 
         // Create objects for XML Controls
         simWidth = screen.findNiftyControl("widthSlider", Slider.class);
@@ -341,7 +356,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         cargoLabel.setText(cargoLabelText);
     }
 
-    
+
     /**
      * Listener to change values when Patrol Slider Probability is changed
      * @param id String containing the ID of the element in the XML representaion of GUI
@@ -353,7 +368,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         patrolLabel.setText(patrolLabelText);
     }
 
-    
+
     /**
      * Listener to change values when Pirate Slider Probability is changed
      * @param id String containing the ID of the element in the XML representaion of GUI
@@ -365,7 +380,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         pirateLabel.setText(pirateLabelText);
     }
 
-    
+
     /**
      * Listener to change values when simulation width is changed
      * @param id String containing the ID of the element in the XML representaion of GUI
@@ -401,14 +416,14 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     /**
      * Returns an integer containing the height of simulation representing miles.
      * @return An integer containing the height of the simulation.
-     */    
+     */
     int getHeight() {
         return height;
     }
 
     /**
      * NOT USED. Handled by PirateSimApp.java
-     * @param tpf 
+     * @param tpf
      */
     @Override
     public void update(float tpf) {
@@ -505,5 +520,21 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     public void setTimeStepsString(int num) {
         this.timeStepsString = "There have been " + num + " time steps.";
         timeStepsLabel.setText(timeStepsString);
+    }
+
+    /**
+     * Updates all the statistic that are being displayed.
+     */
+    public void updateStatisticStrings() {
+        setCargoEnteredString(pApp.sim.shipsEntered[pApp.sim.CARGO]);
+        setPatrolEnteredString(pApp.sim.shipsEntered[pApp.sim.PATROL]);
+        setPirateEnteredString(pApp.sim.shipsEntered[pApp.sim.PIRATE]);
+        setCargoExitedString(pApp.sim.shipsExited[pApp.sim.CARGO]);
+        setPatrolExitedString(pApp.sim.shipsExited[pApp.sim.PATROL]);
+        setPirateExitedString(pApp.sim.shipsExited[pApp.sim.PIRATE]);
+        setCargoCapturedString(pApp.sim.captures);
+        setCargoRescuedString(pApp.sim.rescues);
+        setPirateDefeatedString(pApp.sim.defeats);
+        setTimeStepsString(pApp.sim.timeStep);
     }
 }
