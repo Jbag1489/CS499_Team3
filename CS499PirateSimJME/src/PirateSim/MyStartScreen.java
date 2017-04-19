@@ -93,7 +93,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * startGame is what will be processed when the user clicks the "Start Simulation" button.
      * @param nextScreen A string containing the name to advance the NiftyGUI to.
      */
-    public void startGame(String nextScreen) {
+    public void startSim(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
         
         if (seedTextField.getDisplayedText().equals("")){
