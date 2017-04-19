@@ -103,6 +103,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         pApp.stop();
     }
     
+    /**
+     * Return to menu while simulation running
+     */
     public void quitToMenu(){
         nifty.gotoScreen("start");
     }
