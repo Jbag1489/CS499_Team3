@@ -69,7 +69,7 @@ Quit will exit the simulation and return you to your desktop.
                     <panel id="startButtonPanel" height="50%" width="25%" valign="center" childLayout="center">
                         <control name="button" label="Start" id="StartButton" align="center" valign="center"
                                  visibleToMouse="true" >
-                            <interact onClick="startGame(hud)"/>
+                            <interact onClick="startSim(hud)"/>
                         </control>
                     </panel>
                     

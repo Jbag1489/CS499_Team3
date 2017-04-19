@@ -24,6 +24,7 @@ import de.lessvoid.nifty.screen.ScreenController;
 public class MyStartScreen extends AbstractAppState implements ScreenController {
 
     final long DEFAULT_SEED = 6545;
+    final int DEFAULT_SPEED_INDEX = 4;
     
     private Nifty nifty;
     private Screen screen;
@@ -92,7 +93,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * startGame is what will be processed when the user clicks the "Start Simulation" button.
      * @param nextScreen A string containing the name to advance the NiftyGUI to.
      */
-    public void startGame(String nextScreen) {
+    public void startSim(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
         
         if (seedTextField.getDisplayedText().equals("")){
@@ -106,7 +107,11 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
                 (double) cargoProb.getValue(), (double) pirateProb.getValue(),
                 (double) patrolProb.getValue(), seed);
         pApp.setSim(newSim);
+        System.out.println("wtf");
         setPaused(false);
+        System.out.println("The simulatin is running: " + paused);
+        simSpeed = simSpeeds[DEFAULT_SPEED_INDEX];
+        updateSpeedLabel();
     }
 
     /**
@@ -120,6 +125,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * Return to menu while simulation running
      */
     public void quitToMenu(){
+        setPaused(true);
         nifty.gotoScreen("start");
     }
 
@@ -193,8 +199,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      */
     private void updateSpeedLabel() {
         String speedLabelText = "Sim Speed: " + simSpeeds[speedIndex];
-        System.out.println("Sim speed changed to "
-                + String.format("%.1f", simSpeeds[speedIndex]));
+//        System.out.println("Sim speed changed to "
+//                + String.format("%.1f", simSpeeds[speedIndex]));
         simSpeedLabel.setText(speedLabelText);
     }
 
@@ -239,7 +245,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         seedTextField = screen.findNiftyControl("seed", TextField.class);
 
         // Initialize simulation to 1x speed.
-        speedIndex = 4;
+        speedIndex = DEFAULT_SPEED_INDEX;
 
         // Create objects for XML Controls
         simWidth = screen.findNiftyControl("widthSlider", Slider.class);
@@ -548,10 +554,10 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     public void setPaused(boolean state) {
         paused = state;
         if (state) {
-            pauseButton.setText("Pause");
+            pauseButton.setText("Unpause");
             pApp.scene.water.setWindDirection(Vector2f.ZERO);
         } else {
-            pauseButton.setText("Unpause");
+            pauseButton.setText("Pause");
             pApp.scene.water.setWindDirection(Vector2f.UNIT_XY);
         }
     }
