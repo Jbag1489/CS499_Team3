@@ -37,8 +37,8 @@ public class PirateSimApp extends SimpleApplication {
         //note to Owen:
         //public void setResizable(boolean resizable)
         //Allows the display window to be resized by dragging its edges. Only supported for JmeContext.Type.Display contexts which are in windowed mode, ignored for other types. The default value is false.
-        setDisplayStatView(true); //TODO fix F5 behavior so this doesn't ever show up
-        setDisplayFps(true);
+        setDisplayStatView(false); //TODO fix F5 behavior so this doesn't ever show up
+        setDisplayFps(false);
         setShowSettings(true);
         settings = new AppSettings(true);
         settings.setFrameRate(targetFPS);
@@ -55,7 +55,7 @@ public class PirateSimApp extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, DEFAULT_SEED));
-        panCam = new PanCamera(cam, inputManager, getFlyByCamera());
+        panCam = new PanCamera(this, cam, inputManager, getFlyByCamera());
         panCam.register();
         timeSinceLastFrame = 0;
         /* Josh Test Addition */

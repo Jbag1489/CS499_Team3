@@ -27,12 +27,14 @@ public class PanCamera implements AnalogListener, ActionListener {
     boolean canPan;
     String[] mappings = new String[]{"PANCAM_Left", "PANCAM_Right", "PANCAM_Up", "PANCAM_Down",
                                      "PANCAM_KeyLeft", "PANCAM_KeyRight", "PANCAM_KeyUp", "PANCAM_KeyDown", "PANCAM_ZoomIn", "PANCAM_ZoomOut", "PANCAM_Drag"};
+    PirateSimApp pSimApp;
 
     FlyByCamera flyByCam;
     boolean flyBy = false;
     boolean flyByReg = false;
     
-    PanCamera(Camera pCam, InputManager pInputMan, FlyByCamera pFlyByCam) {//TODO fly cam debug only
+    PanCamera(PirateSimApp simApp, Camera pCam, InputManager pInputMan, FlyByCamera pFlyByCam) {//TODO fly cam debug only
+        pSimApp = simApp;
         cam = pCam;
         inputMan = pInputMan;
         flyByCam = pFlyByCam;
@@ -97,12 +99,30 @@ flyByReg = true;
         Vector3f pos = cam.getLocation();
         pos = pos.add(axis.mult(value*pos.y));
         cam.setLocation(pos);
+        bound();
     }
     void zoom(float value) {
         Vector3f pos = cam.getLocation();
         float speed = pos.y/10*value;
         pos = pos.subtract(Vector3f.UNIT_Y.mult(speed));
         if (pos.y > 1 && pos.y < 400) cam.setLocation(pos);
+    }
+    void bound() {
+        float scale = 1 ;//pSimApp.scene.background.terrainScale;
+        Vector3f center = new Vector3f(5*scale, 0, -scale/5);
+        Vector3f size = new Vector3f(-45*scale, 0, -35*scale);
+        Vector3f localCamPos = cam.getLocation().subtract(center);
+        //float heightScale = localCamPos.y/;
+        
+        if (localCamPos.x < size.x) {localCamPos.x = size.x; System.out.println("neg x edge");}
+        if (localCamPos.x > -size.x) {localCamPos.x = -size.x; System.out.println("pos x edge");}
+        if (localCamPos.z < size.z) {localCamPos.z = size.z; System.out.println("neg z edge");}
+        if (localCamPos.z > -size.z) {localCamPos.z = -size.z; System.out.println("pos z edge");}
+        cam.setLocation(localCamPos.add(center));
+        System.out.println(localCamPos.x + ", " + localCamPos.z);
+//            terrain.setLocalScale(terrainScale, terrainScale/1.5f, terrainScale);
+//            terrain.getLocalRotation().fromAngleAxis(FastMath.PI, Vector3f.UNIT_Y);
+//            terrain.setLocalTranslation(-5*terrainScale, 0, terrainScale/5f);
     }
     public void onAction(String name, boolean value, float tpf) {
         if (name.equals("PANCAM_Drag")){

@@ -1,19 +1,17 @@
 Josh:
 Fix speed up/slow down reseting alpha
+pirate, cargo textures
 
 Owen:
-Water speed/tuning
-Camera control/bounds
-Boat assets
-Terrain normal bake
-Red sea depth
+Camera control/bounds, set near/far plane
+Terrain touch up, Red sea depth
+ship heading, axes
 Tune day/night cycle, shadow intensity
-Code clean up
-Javadoc
+Water speed/tuning
+remove fps display, axis ref, and terminal output
 presentation slides
-remove fps display and terminal output
-ship heading
+search for seed
+disable stats
+
 map scaling corner
-set near/far plane
-
-
+Code clean up, Javadoc
