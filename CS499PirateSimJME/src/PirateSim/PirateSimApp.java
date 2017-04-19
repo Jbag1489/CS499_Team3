@@ -119,7 +119,7 @@ public class PirateSimApp extends SimpleApplication {
             startScreen.updateStatisticStrings();
 
             startScreen.singleTick = false;
-            startScreen.simPaused = true;
+            startScreen.setPaused(true);
         }
         //Fun code to compute which simulation timestep should be rendered at which alpha
         if (!startScreen.getPaused()) {

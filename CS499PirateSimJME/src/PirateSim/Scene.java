@@ -276,7 +276,7 @@ public class Scene {
             backgroundNode.attachChild(gridGeom);
             
             fpp.addFilter(water);
-            //viewPort.addProcessor(fpp);
+            viewPort.addProcessor(fpp);
             
             createAxisReference();
         }
@@ -302,9 +302,9 @@ public class Scene {
             
             final int SHADOWMAP_SIZE=2048;
             dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);
-            //dlsr.setShadowIntensity(0.f);
+            dlsr.setShadowIntensity(.7f); //TODO
             dlsr.setLight(sunLight);
-            //viewPort.addProcessor(dlsr);
+            viewPort.addProcessor(dlsr);
             
             lightingNode = new Node("lighting");
             rootNode.addLight(sunLight);
@@ -324,7 +324,7 @@ public class Scene {
         
         void update(float alpha) {
             //solve the proportion for x: deltaAlpha / dayHours = x / 180
-            float elapsedDays = sim.getElapsedDays(alpha);//*20;
+            float elapsedDays = sim.getElapsedDays(alpha)*15;
             int day = (int) elapsedDays;
             float timeOfDay = elapsedDays - day;
             float sunAngle = timeOfDay*360;            
@@ -352,7 +352,7 @@ public class Scene {
                 sunLight.setColor(sunColor.mult(sunIntensity));
                 sunAmbient.setColor(sunAmbColor.mult(.2f*sunIntensity));
                 angle = sunAngle;
-                //System.out.println("sun " + angle);
+                System.out.println("sun " + angle);
             } else {
                 if (currentLight == sunLight) {
                     rootNode.removeLight(sunLight);
@@ -363,9 +363,9 @@ public class Scene {
                     currentLight = moonLight;
                 }
                moonLight.setColor(moonColor.mult(moonIntensity));
-               moonAmbient.setColor(moonAmbColor.mult(.1f*moonIntensity));
+               moonAmbient.setColor(moonAmbColor.mult(.4f*moonIntensity));
                angle = moonAngle;
-               //System.out.println("moon " + angle);
+               System.out.println("moon " + angle);
             }
             Vector3f dir = new Vector3f(FastMath.cos(angle * FastMath.DEG_TO_RAD), -FastMath.sin(angle * FastMath.DEG_TO_RAD), 0f).normalizeLocal();
             currentLight.setDirection(dir);

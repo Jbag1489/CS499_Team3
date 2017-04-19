@@ -1,4 +1,5 @@
 Josh:
+Fix speed up/slow down reseting alpha
 
 Owen:
 Water speed/tuning
@@ -6,7 +7,7 @@ Camera control/bounds
 Boat assets
 Terrain normal bake
 Red sea depth
-Tune day/night cycle
+Tune day/night cycle, shadow intensity
 Code clean up
 Javadoc
 presentation slides
