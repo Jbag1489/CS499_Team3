@@ -286,7 +286,7 @@ public class Scene {
         DirectionalLightShadowRenderer dlsr;
         AmbientLight sunAmbient;
         AmbientLight moonAmbient;
-        int maxEmitCount = 5;
+        int maxEmitCount = 15;
         List<Emitter> emitters;
         
         Geometry sungeom;
