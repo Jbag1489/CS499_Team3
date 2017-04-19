@@ -1,6 +1,5 @@
 package PirateSim;
 
-import java.util.Date;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -32,7 +31,7 @@ class Simulation {
     private int nextID = 0;
 
     int shipsEntered [], shipsExited [], captures = 0, defeats = 0, rescues = 0;
-    
+
     /** * Constructs a simulation object.
      * @param xSize the East-West extent of the simulation area in cells
      * @param ySize the North-South extent of the simulation area in cells
@@ -308,7 +307,6 @@ class Simulation {
         for(int i = 0; i < cells.length; i++) System.out.print("__");
         System.out.print("\n\t");
     }
-    
     /** * Represents a time interval in days, hours, and minutes. **/
     class TimeInterval {
         int days;

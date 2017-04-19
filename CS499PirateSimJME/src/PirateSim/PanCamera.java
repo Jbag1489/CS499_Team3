@@ -102,7 +102,7 @@ flyByReg = true;
         Vector3f pos = cam.getLocation();
         float speed = pos.y/10*value;
         pos = pos.subtract(Vector3f.UNIT_Y.mult(speed));
-        if (pos.y > 1 && pos.y < 200) cam.setLocation(pos);
+        if (pos.y > 1 && pos.y < 400) cam.setLocation(pos);
     }
     public void onAction(String name, boolean value, float tpf) {
         if (name.equals("PANCAM_Drag")){

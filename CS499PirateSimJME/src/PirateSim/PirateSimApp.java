@@ -4,6 +4,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.system.AppSettings;
 import com.jme3.renderer.RenderManager;
+import com.jme3.light.LightList;
 import de.lessvoid.nifty.Nifty;
 
 /**
@@ -28,7 +29,7 @@ public class PirateSimApp extends SimpleApplication {
         //note to Owen:
         //public void setResizable(boolean resizable)
         //Allows the display window to be resized by dragging its edges. Only supported for JmeContext.Type.Display contexts which are in windowed mode, ignored for other types. The default value is false.
-        setDisplayStatView(false); //TODO fix F5 behavior so this doesn't ever show up
+        setDisplayStatView(true); //TODO fix F5 behavior so this doesn't ever show up
         setDisplayFps(true);
         setShowSettings(true);
         settings = new AppSettings(true);
@@ -67,6 +68,7 @@ public class PirateSimApp extends SimpleApplication {
     void setSim(Simulation pSim) {
         sim = pSim;
         rootNode.detachAllChildren();
+        rootNode.getLocalLightList().clear();
         viewPort.clearProcessors();
         scene = new Scene(pSim, rootNode, assetManager, viewPort);
     }
@@ -75,20 +77,16 @@ public class PirateSimApp extends SimpleApplication {
     //Per frame update function
     @Override
     public void simpleUpdate(float tpf) {
-        if (sim.timeStep == 10) setSim(new Simulation(20, 10, 0.4, 0.25, 0.2, 6545));
-        sim.setProbCargo(startScreen.getCargoProb());
-        sim.setProbPatrol(startScreen.getPatrolProb());
-        sim.setProbPirate(startScreen.getPirateProb());
         if (startScreen.singleStep) {
             startScreen.singleStep = false;
-            startScreen.simPaused = true;
+            startScreen.setPaused(true);
             sim.tick();
             timeSinceLastTick = 0;
             timeSinceLastFrame = 0;
             scene.update(0);
         }
         //Fun code to compute which simulation timestep should be rendered at which alpha
-        if (!startScreen.simPaused) {
+        if (!startScreen.getPaused()) {
             timeSinceLastTick += tpf;
             timeSinceLastFrame += tpf;
             float simSpeed = startScreen.getSimSpeed();

@@ -1,7 +1,18 @@
 Josh:
-	Compact GUI
-		start/quit closer horizontal
-		vertical between all groups
-		all sliders on one row?
+
+Owen:
+Water speed/tuning
+Camera control/bounds
+Boat assets
+Terrain normal bake
+Red sea depth
+Tune day/night cycle
+Code clean up
+Javadoc
+presentation slides
+remove fps display and terminal output
+ship heading
+map scaling corner
+set near/far plane
 
 

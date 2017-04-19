@@ -3,6 +3,7 @@ package PirateSim;
 import com.jme3.asset.AssetManager;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
+import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -54,49 +55,15 @@ public class Scene {
         assetMan = pAssetMan;
         viewPort = pViewPort;
         boats = new Boats();
-        background = new Background();
         lighting = new Lighting();
+        background = new Background();
     }
     //update all the scene elements, just boats and the background for now
     void update(float alpha) {
         boats.update(alpha);
-        background.update(alpha);
         lighting.update(alpha);
-    }
-    //currently not being used
-    void translateMesh(Mesh mesh, float x, float y) {
-        VertexBuffer verts = mesh.getBuffer(VertexBuffer.Type.Position);
-        for (int i = 0; i < verts.getNumElements(); i++) {
-            float newX = (Float) verts.getElementComponent(i, 0) + x;
-            float newY = (Float) verts.getElementComponent(i, 1) + y;
-            verts.setElementComponent(i, 0, newX);
-            verts.setElementComponent(i, 1, newY);
-        }
-    }
-    //creates axis reference for debugging purposes
-    void createAxisReference() {
-        Arrow arrows[] = new Arrow[3];
-        ColorRGBA colors[] = new ColorRGBA[3];
-        arrows[0] = new Arrow(Vector3f.UNIT_X);
-        colors[0] = ColorRGBA.Red;
-        arrows[1] = new Arrow(Vector3f.UNIT_Y);
-        colors[1] = ColorRGBA.Green;
-        arrows[2] = new Arrow(Vector3f.UNIT_Z);
-        colors[2] = ColorRGBA.White;
-        
-        for (int i = 0; i < 3; i++) {
-            arrows[i].setLineWidth(4);
-            Geometry g = new Geometry("coordinate axis", arrows[i]);
-            g.setShadowMode(RenderQueue.ShadowMode.Off);
-            Material mat = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
-            mat.getAdditionalRenderState().setWireframe(true);
-            mat.setColor("Color", colors[i]);
-            g.setMaterial(mat);
-            g.getLocalTranslation().set(0f, 0f, 0.1f);
-            rootNode.attachChild(g);
-        }
-    }
-    
+        background.update(alpha);
+    }    
     //This class renders the boats, called boats instead of ships to differentiate it from Simulation.Ship
     class Boats {
         //these arrays track the properties of each type of boat
@@ -120,6 +87,7 @@ public class Scene {
             generateBoatType(Simulation.ESCORTWRECK,    new Box(0.2f, 0.2f, 0.28f), ColorRGBA.Pink, 0f, 0.75f);
             
             shipNode = new Node("ships");
+            shipNode.getLocalRotation().fromAngleAxis(-2.8f, Vector3f.UNIT_Y);
             rootNode.attachChild(shipNode);
         }
         //Convenience function to generate boat meshes etc. 
@@ -157,7 +125,6 @@ public class Scene {
 //                    mats[type].setColor("Diffuse",ColorRGBA.White);
 //                    mats[type].setColor("Specular",ColorRGBA.White);
 //                    mats[type].setFloat("Shininess", 64f);  // [0,128]
-            
             } else {
                 models[type] = new Geometry("boat", mesh);
                 mats[type] = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
@@ -174,12 +141,11 @@ public class Scene {
                 Simulation.Ship visualShip = ship.previousStates.get(ship.previousStates.size() - 2);
                 Spatial boatModel = models[visualShip.type].clone();
                 Material matBoat = mats[visualShip.type];
-                boatModel.setMaterial(matBoat);
-                shipNode.attachChild(boatModel);
-                
+                boatModel.setMaterial(matBoat);                
                 Transform transform = interpolateShipTransform(ship, alpha);
                 transform.getRotation().fromAngles(-FastMath.PI/2, FastMath.PI, 0);
                 boatModel.getLocalTransform().set(transform);
+                shipNode.attachChild(boatModel);
             }
         }
         //returns the interpolated transform (heading and position in this case) of the given ship at time alpha
@@ -198,7 +164,7 @@ public class Scene {
                 int i = 1;
                 do {
                     sample1 = sample2.clone();
-                    sample2 = sampleShipPos(ship, i + 2); //TODO efficiency?
+                    sample2 = sampleShipPos(ship, i + 2);
                     i++;
                 } while (sample1.x == sample2.x && sample1.y == sample2.y);
                 delta = FastMath.interpolateCatmullRom(0.9f, 0.5f, sampleShipPos(ship, 3 + i), sample2, sample1, sampleShipPos(ship, 0 + i)).subtract(translation);
@@ -225,8 +191,8 @@ public class Scene {
      */
     class Background {
         Node backgroundNode;
+        float terrainScale;
         
-        //creates map grid, quad for the sea, TODO terrain
         Background() {
 
         Vector3f lightDir = new Vector3f(0, -1, 0);
@@ -235,7 +201,7 @@ public class Scene {
 
             FilterPostProcessor fpp = new FilterPostProcessor(assetMan);
 
-            fpp.addFilter(water);
+            
 
     //        LightScatteringFilter lsf = new LightScatteringFilter(lightDir.mult(-300));
     //        lsf.setLightDensity(1.0f);
@@ -250,20 +216,24 @@ public class Scene {
 
 
             water.setWaveScale(0.03f);
-            water.setMaxAmplitude(0.5f);
-            water.setFoamExistence(new Vector3f(1f, 4, 0.1f));
+            water.setMaxAmplitude(0.1f);
+            water.setUseFoam(false);
+            water.setFoamExistence(new Vector3f(1f, 4, 2f));
             water.setFoamTexture((Texture2D) assetMan.loadTexture("Common/MatDefs/Water/Textures/foam2.jpg"));
             water.setNormalScale(20f);
-            water.setShininess(0.15f);
+            water.setShininess(0.25f);
             //water.setSunScale(1f);
-            water.setColorExtinction(new Vector3f(2f, 5f, 6f));
+            water.setColorExtinction(new Vector3f(.2f, .5f, .7f));
             water.setDeepWaterColor(new ColorRGBA(0.03f, 0.06f, 0.1f, 1f));
             water.setRadius(SEA_BORDER_SIZE);
             water.setWaterColor(new ColorRGBA(0.4f, 0.9f, 1f, 1f));
             water.setWindDirection(Vector2f.UNIT_XY);
             water.setRefractionConstant(0.25f);
             water.setRefractionStrength(0.1f);
-            //water.setFoamHardness(0.6f);
+            water.setUseCaustics(false);
+            water.setUseRefraction(false);
+            water.setFoamHardness(0.6f);
+            water.setReflectionMapSize(1024);
 
             water.setWaterHeight(0f);
             
@@ -271,10 +241,9 @@ public class Scene {
             Spatial terrain = assetMan.loadModel("Models/terrain/terrain.j3o");
             Material terrainMat = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
             terrainMat.setTexture("DiffuseMap", assetMan.loadTexture("Textures/gulf of aden color.png"));
-//            terrainMat.setBoolean("UseMaterialColors", true);
-//            terrainMat.setColor("Diffuse", ColorRGBA.White);
-//            terrainMat.setColor("Specular", ColorRGBA.White);
-//            terrainMat.setFloat("Shininess", 2f);  // [0,128]
+            //terrainMat.setBoolean("UseMaterialColors", false);
+            terrainMat.setColor("Specular", ColorRGBA.White);
+            terrainMat.setFloat("Shininess", 100f);  // [0,128]
             
             terrain.setMaterial(terrainMat);
             
@@ -285,7 +254,7 @@ public class Scene {
             mat.setColor("Diffuse", ColorRGBA.Blue);
             mat.setBoolean("UseMaterialColors",true);
             seaGeom.setMaterial(mat);
-            seaGeom.center().getLocalTranslation().set(-SEA_BORDER_SIZE, -3f, -SEA_BORDER_SIZE);
+            seaGeom.setLocalTranslation(-SEA_BORDER_SIZE, -3f, -SEA_BORDER_SIZE);
             Grid mapGrid = new Grid(sim.size.y + 1, sim.size.x + 1, 1);
             Geometry gridGeom = new Geometry("Grid", mapGrid);
             gridGeom.setShadowMode(RenderQueue.ShadowMode.Off);
@@ -298,16 +267,23 @@ public class Scene {
 
             backgroundNode = new Node("background");
             rootNode.attachChild(backgroundNode);
+            
+            if (sim.size.x/sim.size.y > 4) terrainScale = sim.size.x*5/40;
+            else terrainScale = sim.size.y*5/10;
+            terrain.setLocalScale(terrainScale, terrainScale/1.5f, terrainScale);
+            terrain.getLocalRotation().fromAngleAxis(FastMath.PI, Vector3f.UNIT_Y);
+            terrain.setLocalTranslation(-5*terrainScale, 0, terrainScale/5f);
             backgroundNode.attachChild(terrain);
             //backgroundNode.attachChild(seaGeom);
+            gridGeom.getLocalRotation().fromAngleAxis(-2.8f, Vector3f.UNIT_Y);
             backgroundNode.attachChild(gridGeom);
-            viewPort.addProcessor(fpp);
+            
+            fpp.addFilter(water);
+            //viewPort.addProcessor(fpp);
             
             createAxisReference();
         }
-        void update(float alhpa) {
-            //TODO animated water
-        }
+        void update(float alhpa) {}
     }
     
     class Lighting {
@@ -319,24 +295,32 @@ public class Scene {
         AmbientLight sunAmbient;
         AmbientLight moonAmbient;
         
+        Geometry sungeom;
+        
         Lighting() {
             sunLight = new DirectionalLight();
-            sunAmbient = new AmbientLight();
-            
+            sunAmbient = new AmbientLight();    
             moonLight = new DirectionalLight();
             moonAmbient = new AmbientLight();
             
             final int SHADOWMAP_SIZE=2048;
             dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);  
             dlsr.setLight(sunLight);
-            viewPort.addProcessor(dlsr);
+            //viewPort.addProcessor(dlsr);
             
             lightingNode = new Node("lighting");
             rootNode.addLight(sunLight);
             rootNode.addLight(sunAmbient);
             currentLight = sunLight;
-            //rootNode.attachChild(lightingNode);
+            rootNode.attachChild(lightingNode);
             rootNode.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
+            
+            Box sunbox = new Box(1, 1, 1);
+            sungeom = new Geometry("Quad", sunbox);
+            Material mat = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat.setColor("Color", ColorRGBA.Yellow);
+            sungeom.setMaterial(mat);
+            //rootNode.attachChild(sungeom);
         }
         
         void update(float alpha) {
@@ -344,11 +328,11 @@ public class Scene {
             float elapsedDays = sim.getElapsedDays(alpha)*20;
             int day = (int) elapsedDays;
             float timeOfDay = elapsedDays - day;
-            float sunAngle = timeOfDay*360;
+            float sunAngle = timeOfDay*360;            
             float moonAngle = timeOfDay*360 + 180;
-            float sunIntensity = 2*FastMath.sin(sunAngle*FastMath.DEG_TO_RAD);
+            float sunIntensity = 1.5f*FastMath.sin(sunAngle*FastMath.DEG_TO_RAD);
             if (sunIntensity < 0) sunIntensity = 0;
-            float moonIntensity = 0.1f*FastMath.sin(moonAngle*FastMath.DEG_TO_RAD);
+            float moonIntensity = 0.5f*FastMath.sin(moonAngle*FastMath.DEG_TO_RAD);
             if (moonIntensity < 0) moonIntensity = 0;
             float angle;
             ColorRGBA sunColor = new ColorRGBA(1f, 1f, 1f, 0f);
@@ -365,7 +349,7 @@ public class Scene {
                     currentLight = sunLight;
                 }
                 sunLight.setColor(sunColor.mult(sunIntensity));
-                sunAmbient.setColor(sunAmbColor.mult(.5f));
+                sunAmbient.setColor(sunAmbColor.mult(.2f*sunIntensity));
                 angle = sunAngle;
                 System.out.println("sun " + angle);
             } else {
@@ -378,7 +362,7 @@ public class Scene {
                     currentLight = moonLight;
                 }
                moonLight.setColor(moonColor.mult(moonIntensity));
-               moonAmbient.setColor(moonAmbColor.mult(.5f));
+               moonAmbient.setColor(moonAmbColor.mult(.1f*moonIntensity));
                angle = moonAngle;
                System.out.println("moon " + angle);
             }
@@ -386,6 +370,39 @@ public class Scene {
             currentLight.setDirection(dir);
             water.setLightColor(currentLight.getColor());
             water.setLightDirection(currentLight.getDirection());
+        }
+    }
+        //currently not being used
+    void translateMesh(Mesh mesh, float x, float y) {
+        VertexBuffer verts = mesh.getBuffer(VertexBuffer.Type.Position);
+        for (int i = 0; i < verts.getNumElements(); i++) {
+            float newX = (Float) verts.getElementComponent(i, 0) + x;
+            float newY = (Float) verts.getElementComponent(i, 1) + y;
+            verts.setElementComponent(i, 0, newX);
+            verts.setElementComponent(i, 1, newY);
+        }
+    }
+    //creates axis reference for debugging purposes
+    void createAxisReference() {
+        Arrow arrows[] = new Arrow[3];
+        ColorRGBA colors[] = new ColorRGBA[3];
+        arrows[0] = new Arrow(Vector3f.UNIT_X);
+        colors[0] = ColorRGBA.Red;
+        arrows[1] = new Arrow(Vector3f.UNIT_Y);
+        colors[1] = ColorRGBA.Green;
+        arrows[2] = new Arrow(Vector3f.UNIT_Z);
+        colors[2] = ColorRGBA.White;
+        
+        for (int i = 0; i < 3; i++) {
+            arrows[i].setLineWidth(4);
+            Geometry g = new Geometry("coordinate axis", arrows[i]);
+            g.setShadowMode(RenderQueue.ShadowMode.Off);
+            Material mat = new Material(assetMan, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat.getAdditionalRenderState().setWireframe(true);
+            mat.setColor("Color", colors[i]);
+            g.setMaterial(mat);
+            g.getLocalTranslation().set(0f, 0f, 0.1f);
+            rootNode.attachChild(g);
         }
     }
 }

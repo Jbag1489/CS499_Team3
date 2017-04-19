@@ -5,9 +5,9 @@
 package PirateSim;
 
 import com.jme3.app.Application;
-import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
+import com.jme3.math.Vector2f;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.NiftyEventSubscriber;
 import de.lessvoid.nifty.controls.Button;
@@ -18,18 +18,17 @@ import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 
 public class MyStartScreen extends AbstractAppState implements ScreenController {
-
     private Nifty nifty;
     private Screen screen;
     private Screen screenHud;
     long seed;
     float simSpeed = 1; // ties to timeAcceleration in Application
-    boolean simPaused = true; // ties to simPaused in Application
+    private boolean paused = true; // ties to paused in Application
     boolean singleStep = false;
     // Initialize to true, when start is pressed, it will "unpause"
     // Objects for XML Control
-    int width = 20;
-    int height = 10;
+    int width;
+    int height;
     private Slider simWidth;
     private Slider simHeight;
     private Slider cargoProb;
@@ -81,12 +80,11 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      */
     public void startGame(String nextScreen) {
         nifty.gotoScreen(nextScreen);  // switch to another screen
-        // Simulation(int xSize, int ySize, double cProbNewCargo, double cProbNewPirate, double cProbNewPatrol, long seed)
         Simulation newSim = new Simulation((int) simWidth.getValue(), (int) simHeight.getValue(),
                 (double) cargoProb.getValue(), (double) pirateProb.getValue(),
                 (double) patrolProb.getValue(), seed);
         pApp.setSim(newSim);
-        simPaused = false; // Will start running the simulation
+        setPaused(false);
     }
 
     public void quitGame() {
@@ -127,17 +125,6 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
          this.seed = sim.seed;
          */
     }
-
-    public void changePauseState() {
-        if (simPaused) {
-            simPaused = false;
-            pauseButton.setText("Pause");
-        } else {
-            simPaused = true;
-            pauseButton.setText("Unpause");
-        }
-    }
-
     /**
      * Nifty GUI ScreenControl methods
      */
@@ -162,7 +149,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
 
     public void advanceSingleTick() {
 
-        simPaused = true;
+        setPaused(true);
         singleTick = true;
         pApp.sim.tick();
     }
@@ -235,7 +222,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         simWidth.setMax((float) 400);
         simWidth.setMin((float) 10);
         simWidth.setStepSize((float) 10);
-        simWidth.setValue((float) 20);
+        simWidth.setValue((float) 40);
         simWidth.setButtonStepSize((float) 10);
 
         simHeight.setMax((float) 100);
@@ -392,5 +379,21 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     public void setTimeStepsString(int num) {
         this.timeStepsString = "There have been " + num + " time steps.";
         timeStepsLabel.setText(timeStepsString);
+    }
+    
+    public boolean getPaused() {return paused;}
+    
+    public void setPaused(boolean state) {
+        paused = state;
+        if (state) {
+            pauseButton.setText("Pause");
+            pApp.scene.water.setWindDirection(Vector2f.ZERO);
+        } else {
+            pauseButton.setText("Unpause");
+            pApp.scene.water.setWindDirection(Vector2f.UNIT_XY);
+        }
+    }
+    public void changePauseState() {
+        setPaused(!getPaused());
     }
 }
