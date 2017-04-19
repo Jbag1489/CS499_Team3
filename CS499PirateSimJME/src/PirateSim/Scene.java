@@ -1,10 +1,14 @@
 package PirateSim;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
+import com.jme3.renderer.Camera;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Transform;
@@ -32,7 +36,11 @@ import com.jme3.post.filters.BloomFilter;
 import com.jme3.post.filters.CartoonEdgeFilter;
 import com.jme3.post.filters.DepthOfFieldFilter;
 import com.jme3.post.filters.LightScatteringFilter;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.texture.Texture2D;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Class to create a JME scenegraph for a given simulation state.
@@ -137,6 +145,7 @@ public class Scene {
         //alpha is the amount of time since the last tick, alpha = 1 is the next tick
         void update(float alpha) {
             shipNode.detachAllChildren();
+            lighting.removeParticles();
             for (Simulation.Ship ship : sim.ships) {
                 Simulation.Ship visualShip = ship.previousStates.get(ship.previousStates.size() - 2);
                 Spatial boatModel = models[visualShip.type].clone();
@@ -146,6 +155,10 @@ public class Scene {
                 transform.getRotation().fromAngles(-FastMath.PI/2, FastMath.PI, 0);
                 boatModel.getLocalTransform().set(transform);
                 shipNode.attachChild(boatModel);
+                if (ship.type == Simulation.WRECK)
+                {
+                    lighting.addParticles(boatModel.getWorldTranslation());
+                }
             }
         }
         //returns the interpolated transform (heading and position in this case) of the given ship at time alpha
@@ -192,28 +205,12 @@ public class Scene {
     class Background {
         Node backgroundNode;
         float terrainScale;
+        FilterPostProcessor fpp;
         
         Background() {
-
-        Vector3f lightDir = new Vector3f(0, -1, 0);
-
+            Vector3f lightDir = new Vector3f(0, -1, 0);
             water = new WaterFilter(rootNode, lightDir);
-
-            FilterPostProcessor fpp = new FilterPostProcessor(assetMan);
-
-            
-
-    //        LightScatteringFilter lsf = new LightScatteringFilter(lightDir.mult(-300));
-    //        lsf.setLightDensity(1.0f);
-    //        fpp.addFilter(lsf);
-    //        
-
-            //fpp.addFilter(new TranslucentBucketFilter());
-            //com.jme3.post.filters.TranslucentBucketFilter
-            //       
-
-            // fpp.setNumSamples(4);
-
+            fpp = new FilterPostProcessor(assetMan);
             water.setWaveScale(0.03f);
             water.setMaxAmplitude(0.1f);
             water.setUseFoam(false);
@@ -239,10 +236,8 @@ public class Scene {
             Spatial terrain = assetMan.loadModel("Models/terrain/terrain.j3o");
             Material terrainMat = new Material(assetMan, "Common/MatDefs/Light/Lighting.j3md");
             terrainMat.setTexture("DiffuseMap", assetMan.loadTexture("Textures/gulf of aden color.png"));
-            //terrainMat.setBoolean("UseMaterialColors", false);
             terrainMat.setColor("Specular", ColorRGBA.White);
             terrainMat.setFloat("Shininess", 100f);  // [0,128]
-            
             terrain.setMaterial(terrainMat);
             
             Quad ground = new Quad(sim.size.x + SEA_BORDER_SIZE*2, sim.size.y + SEA_BORDER_SIZE*2);
@@ -291,14 +286,17 @@ public class Scene {
         DirectionalLightShadowRenderer dlsr;
         AmbientLight sunAmbient;
         AmbientLight moonAmbient;
+        int maxEmitCount = 5;
+        List<Emitter> emitters;
         
         Geometry sungeom;
         
         Lighting() {
             sunLight = new DirectionalLight();
-            sunAmbient = new AmbientLight();    
+            sunAmbient = new AmbientLight();
             moonLight = new DirectionalLight();
             moonAmbient = new AmbientLight();
+            emitters = new LinkedList<Emitter>();
             
             final int SHADOWMAP_SIZE=2048;
             dlsr = new DirectionalLightShadowRenderer(assetMan, SHADOWMAP_SIZE, 3);
@@ -321,24 +319,90 @@ public class Scene {
             //rootNode.attachChild(sungeom);
         }
         
+        class Emitter {
+            int emitCount = 0; //how many times we've emitted
+            Vector3f worldTranslation;
+            ParticleEmitter particles;
+            
+            Emitter(Vector3f pWorldTranslation) {
+                worldTranslation = pWorldTranslation;
+                particles = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
+                Material mat_red = new Material(assetMan, "Common/MatDefs/Misc/Particle.j3md");
+                mat_red.setTexture("Texture", assetMan.loadTexture("Effects/Explosion/flame.png"));
+                mat_red.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.AlphaAdditive);
+                particles.setQueueBucket(Bucket.Translucent);
+                particles.setMaterial(mat_red);
+                particles.setImagesX(2);
+                particles.setImagesY(2); // 2x2 texture animation
+                particles.setEndColor(  new ColorRGBA(1f, 0f, 0f, 1f));   // red
+                particles.setStartColor(new ColorRGBA(1f, 1f, 0f, 0.5f)); // yellow
+                //fire.setEndColor(  new ColorRGBA(0.3f, 0.3f, 0.3f, 0.4f));   // grey
+                //fire.setStartColor(new ColorRGBA(0.1f, 0.1f, 0.1f, 0.5f)); // black
+                particles.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 2, 0));
+                particles.setStartSize(.15f);
+                particles.setEndSize(0.01f);
+                particles.setGravity(0, 0, 0);
+                particles.setLowLife(.5f);
+                particles.setHighLife(1.5f);
+                particles.setLocalTranslation(worldTranslation);
+                particles.getParticleInfluencer().setVelocityVariation(0.05f);
+                rootNode.attachChild(particles);
+                //fire.emitAllParticles();
+                //emitters.add(fire);
+            }
+            
+            void emit() {
+                emitCount++;
+            }
+            
+            void remove() {
+                rootNode.detachChild(particles);
+            }
+        }
+        
+        void removeParticles()
+        {
+            //for (String name : new ArrayList<String>(names)) {
+            // Do something
+            //names.remove(nameToRemove);
+
+            for (Emitter emitter : new LinkedList<Emitter>(emitters)) {
+                emitter.emit();
+                if (emitter.emitCount > maxEmitCount) {
+                    emitter.remove();
+                    emitters.remove(emitter);
+                }
+            }
+        }
+        
+        void addParticles(Vector3f worldTranslation)
+        {
+            Emitter emitter = new Emitter(worldTranslation);
+            emitters.add(emitter);
+        }
+        
         
         void update(float alpha) {
             //solve the proportion for x: deltaAlpha / dayHours = x / 180
-            float elapsedDays = sim.getElapsedDays(alpha)*15;
+            float elapsedDays = sim.getElapsedDays(alpha);
             int day = (int) elapsedDays;
             float timeOfDay = elapsedDays - day;
             float sunAngle = timeOfDay*360;            
             float moonAngle = timeOfDay*360 + 180;
-            float sunIntensity = 1.5f*FastMath.sin(sunAngle*FastMath.DEG_TO_RAD);
+            float sunIntensityScalar = 1.5f;
+            float sunIntensity = sunIntensityScalar*FastMath.sin(sunAngle*FastMath.DEG_TO_RAD);
             if (sunIntensity < 0) sunIntensity = 0;
-            float moonIntensity = 0.5f*FastMath.sin(moonAngle*FastMath.DEG_TO_RAD);
+            float moonIntensityScalar = 0.5f;
+            float moonIntensity = moonIntensityScalar*FastMath.sin(moonAngle*FastMath.DEG_TO_RAD);
             if (moonIntensity < 0) moonIntensity = 0;
             float angle;
             ColorRGBA sunColor = new ColorRGBA(1f, 1f, 1f, 0f);
             ColorRGBA sunAmbColor = new ColorRGBA(0.7f, 0.9f, 1f, 0f);
+            ColorRGBA sunsetTint = new ColorRGBA(1f, 0.5f, 0.5f, 0f);
             ColorRGBA moonColor = new ColorRGBA(0.8f, 0.8f, 1f, 0f);
             ColorRGBA moonAmbColor = new ColorRGBA(1f, 1f, 1f, 0f);
             ColorRGBA maxDeepWaterColor = new ColorRGBA(0.2039f, 1.25196f, 1.645f, 0f);
+            //ColorRGBA defaultDeepWaterColor = new ColorRGBA(0.0039f, 0.00196f, 0.145f, 0f);
             
             if (sunIntensity > moonIntensity) {
                 if (currentLight == moonLight) {
@@ -349,11 +413,17 @@ public class Scene {
                     dlsr.setLight(sunLight);
                     currentLight = sunLight;
                 }
-                sunLight.setColor(sunColor.mult(sunIntensity));
-                sunAmbient.setColor(sunAmbColor.mult(.2f*sunIntensity));
+                //calculate sunset tint to be applied, i don't know a better way to calculate this XD
+                ColorRGBA tint = new ColorRGBA(sunsetTint.r - (sunsetTint.r * sunIntensity / sunIntensityScalar),
+                                                sunsetTint.g - (sunsetTint.g * sunIntensity / sunIntensityScalar),
+                                                sunsetTint.b - (sunsetTint.b * sunIntensity / sunIntensityScalar),
+                                                0f);
+                sunLight.setColor(sunColor.mult(sunIntensity).add(tint));
+                sunAmbient.setColor(sunAmbColor.mult(.2f*sunIntensity).add(tint));
                 angle = sunAngle;
-                System.out.println("sun " + angle);
-            } else {
+                //System.out.println("sun " + angle);
+            } 
+            else {
                 if (currentLight == sunLight) {
                     rootNode.removeLight(sunLight);
                     rootNode.removeLight(sunAmbient);
@@ -361,11 +431,16 @@ public class Scene {
                     rootNode.addLight(moonAmbient);
                     dlsr.setLight(moonLight);
                     currentLight = moonLight;
-                }
+               }
+               //we need to add the tint to the moon as well or there will be an annoying jump between light transitions
+               ColorRGBA tint = new ColorRGBA(sunsetTint.r - (sunsetTint.r * moonIntensity / moonIntensityScalar),
+                                               sunsetTint.g - (sunsetTint.g * moonIntensity / moonIntensityScalar),
+                                               sunsetTint.b - (sunsetTint.b * moonIntensity / moonIntensityScalar),
+                                               0f);
                moonLight.setColor(moonColor.mult(moonIntensity));
-               moonAmbient.setColor(moonAmbColor.mult(.4f*moonIntensity));
+               moonAmbient.setColor(moonAmbColor.mult(.4f*moonIntensity).add(tint));
                angle = moonAngle;
-               System.out.println("moon " + angle);
+               //System.out.println("moon " + angle);
             }
             Vector3f dir = new Vector3f(FastMath.cos(angle * FastMath.DEG_TO_RAD), -FastMath.sin(angle * FastMath.DEG_TO_RAD), 0f).normalizeLocal();
             currentLight.setDirection(dir);
