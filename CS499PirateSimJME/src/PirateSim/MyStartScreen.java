@@ -29,7 +29,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
     private Nifty nifty;
     private Screen screen;
     private Screen screenHud;
-    float simSpeed; // ties to timeAcceleration in Application
+    float simSpeed = 1; // ties to timeAcceleration in Application
     private boolean paused = true; // ties to paused in Application
     boolean singleStep = false;
     // Initialize to true, when start is pressed, it will "unpause"
@@ -108,8 +108,7 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
                 (double) patrolProb.getValue(), seed);
         pApp.setSim(newSim);
         setPaused(false);
-        speedIndex = DEFAULT_SPEED_INDEX;
-        simSpeed = simSpeeds[speedIndex];
+        simSpeed = simSpeeds[DEFAULT_SPEED_INDEX];
         updateSpeedLabel();
     }
 
