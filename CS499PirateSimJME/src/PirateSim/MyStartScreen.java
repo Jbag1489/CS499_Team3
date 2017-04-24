@@ -448,7 +448,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of pirates that have entered the simulation.
      */
     public void setPirateEnteredString(int num) {
-        this.pirateEnteredString = num + " pirate ships have entered the simulation.";
+        //this.pirateEnteredString = num + " pirate ships have entered the simulation.";
+        this.pirateEnteredString = num + " Pirates Entered.";
         pirateEnteredLabel.setText(pirateEnteredString);
     }
 
@@ -457,7 +458,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of pirates that have exited the simulation.
      */
     public void setPirateExitedString(int num) {
-        this.pirateExitString = num + " pirate ships have exited the simulation.";
+        //this.pirateExitString = num + " pirate ships have exited the simulation.";
+        this.pirateExitString = num + " Pirates Exited";
         pirateExitLabel.setText(pirateExitString);
     }
 
@@ -466,7 +468,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of patrols that have entered the simulation.
      */
     public void setPatrolEnteredString(int num) {
-        this.patrolEnteredString = num + " patrol ships have entered the simulation.";
+        //this.patrolEnteredString = num + " patrol ships have entered the simulation.";
+        this.patrolEnteredString = num + " Patrols Entered";
         patrolEnteredLabel.setText(patrolEnteredString);
     }
 
@@ -475,7 +478,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of patrols that have exited the simulation.
      */
     public void setPatrolExitedString(int num) {
-        this.patrolExitString = num + " patrol ships have exited the simulation.";
+        //this.patrolExitString = num + " patrol ships have exited the simulation.";
+        this.patrolExitString = num + " Patrols Exited";
         patrolExitLabel.setText(patrolExitString);
     }
 
@@ -484,7 +488,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of cargo ships that have entered the simulation.
      */
     public void setCargoEnteredString(int num) {
-        this.cargoEnteredString = num + " cargo ships have entered the simulation.";
+        //this.cargoEnteredString = num + " cargo ships have entered the simulation.";
+        this.cargoEnteredString = num + " Cargoes";
         cargoEnteredLabel.setText(cargoEnteredString);
     }
 
@@ -493,7 +498,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of cargo ships that have exited the simulation.
      */
     public void setCargoExitedString(int num) {
-        this.cargoExitedString = num + " cargo ships have exited the simulation.";
+        //this.cargoExitedString = num + " cargo ships have exited the simulation
+        this.cargoExitedString = num + " Cargoes Exited";
         cargoExitedLabel.setText(cargoExitedString);
     }
 
@@ -502,7 +508,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of cargo ships captured.
      */
     public void setCargoCapturedString(int num) {
-        this.cargoCapturedString = "There have been " + num + " ship captures.";
+        //this.cargoCapturedString = "There have been " + num + " ship captures.";
+        this.cargoCapturedString = num + " Captures";
         cargoCapturedLabel.setText(cargoCapturedString);
     }
 
@@ -511,7 +518,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of cargo ships rescued.
      */
     public void setCargoRescuedString(int num) {
-        this.cargoRescuedString = "There have been " + num + " ship rescues.";
+        //this.cargoRescuedString = "There have been " + num + " ship rescues.";
+        this.cargoRescuedString = num + " Rescues.";
         cargoRescuedLabel.setText(cargoRescuedString);
     }
 
@@ -520,7 +528,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of pirates defeated.
      */
     public void setPirateDefeatedString(int num) {
-        this.pirateDefeatedString = "There have been " + num + " pirates have been defeated.";
+        //this.pirateDefeatedString = "There have been " + num + " pirates have been defeated.";
+        this.pirateDefeatedString = num + " Defeats";
         pirateDefeatedLabel.setText(pirateDefeatedString);
     }
 
@@ -529,7 +538,8 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      * @param num The number of elapsed time steps.
      */
     public void setTimeStepsString(int num) {
-        this.timeStepsString = "There have been " + num + " time steps.";
+        //this.timeStepsString = "There have been " + num + " Time Steps";
+        this.timeStepsString = num + " Time Steps";
         timeStepsLabel.setText(timeStepsString);
     }
 
