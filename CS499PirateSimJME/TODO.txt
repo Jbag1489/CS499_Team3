@@ -4,14 +4,15 @@ pirate, cargo textures
 
 Owen:
 Camera control/bounds, set near/far plane
-Terrain touch up, Red sea depth
-ship heading, axes
+
 Tune day/night cycle, shadow intensity
 Water speed/tuning
 remove fps display, axis ref, and terminal output
 presentation slides
-search for seed
-disable stats
+disable render stats
 
-map scaling corner
 Code clean up, Javadoc
+
+Even:
+Fire and smoke particles
+Day night cycle color

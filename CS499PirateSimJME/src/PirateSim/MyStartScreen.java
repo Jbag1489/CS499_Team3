@@ -562,10 +562,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
         paused = state;
         if (state) {
             pauseButton.setText("Unpause");
-            pApp.scene.water.setWindDirection(Vector2f.ZERO);
         } else {
             pauseButton.setText("Pause");
-            pApp.scene.water.setWindDirection(Vector2f.UNIT_XY);
+            pApp.scene.water.setWindDirection(Vector2f.ZERO);
         }
     }
     public void changePauseState() {

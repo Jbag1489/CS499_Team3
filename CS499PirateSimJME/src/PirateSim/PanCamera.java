@@ -41,10 +41,11 @@ public class PanCamera implements AnalogListener, ActionListener {
         up = Vector3f.UNIT_Z;
         canPan = false;
         
-        cam.setLocation(new Vector3f(0f, 20f, 0f));
+        cam.setLocation(new Vector3f(0f, pSimApp.scene.terrainScale*12, 0f));
+        bound();
         cam.lookAtDirection(Vector3f.UNIT_Y.mult(-1), up);
         
-        flyByCam.setDragToRotate(true); //TODO debug only
+        flyByCam.setDragToRotate(true);
         flyByCam.setMoveSpeed(30f);
         flyByCam.setZoomSpeed(30f);
         flyByCam.setEnabled(false);
@@ -61,11 +62,11 @@ public class PanCamera implements AnalogListener, ActionListener {
         inputMan.addMapping("PANCAM_ZoomIn", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
         inputMan.addMapping("PANCAM_ZoomOut", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
         inputMan.addMapping("PANCAM_Drag", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-if (!flyByReg) {
-inputMan.addMapping("SWITCH_CAM", new KeyTrigger(KeyInput.KEY_C)); //TODO debug only
-inputMan.addListener(this, "SWITCH_CAM");
-flyByReg = true;
-}
+        if (!flyByReg) {
+            inputMan.addMapping("SWITCH_CAM", new KeyTrigger(KeyInput.KEY_C));
+            inputMan.addListener(this, "SWITCH_CAM");
+            flyByReg = true;
+        }
         inputMan.addListener(this, mappings);
     }
     public void unregister() {
@@ -73,21 +74,21 @@ flyByReg = true;
     }
     public void onAnalog(String name, float value, float tpf) {
         if (name.equals("PANCAM_Left")){
-            pan(-value, cam.getLeft(), canPan);
+            pan(-value, Vector3f.UNIT_X, canPan);
         } else if (name.equals("PANCAM_Right")){
-            pan(value, cam.getLeft(), canPan);
+            pan(value, Vector3f.UNIT_X, canPan);
         } else if (name.equals("PANCAM_Up")){
-            pan(-value, cam.getUp(), canPan);
+            pan(-value, Vector3f.UNIT_Z, canPan);
         } else if (name.equals("PANCAM_Down")){
-            pan(value, cam.getUp(), canPan);
+            pan(value, Vector3f.UNIT_Z, canPan);
         } else if (name.equals("PANCAM_KeyLeft")){
-            pan(value, cam.getLeft(), true);
+            pan(value, Vector3f.UNIT_X, true);
         } else if (name.equals("PANCAM_KeyRight")){
-            pan(-value, cam.getLeft(), true);
+            pan(-value, Vector3f.UNIT_X, true);
         } else if (name.equals("PANCAM_KeyUp")){
-            pan(value, cam.getUp(), true);
+            pan(value, Vector3f.UNIT_Z, true);
         } else if (name.equals("PANCAM_KeyDown")){
-            pan(-value, cam.getUp(), true);
+            pan(-value, Vector3f.UNIT_Z, true);
         } else if (name.equals("PANCAM_ZoomIn")){
             zoom(value);
         } else if (name.equals("PANCAM_ZoomOut")){
@@ -105,24 +106,29 @@ flyByReg = true;
         Vector3f pos = cam.getLocation();
         float speed = pos.y/10*value;
         pos = pos.subtract(Vector3f.UNIT_Y.mult(speed));
-        if (pos.y > 1 && pos.y < 400) cam.setLocation(pos);
+        cam.setLocation(pos);
+        
+        bound();
     }
-    void bound() {
-        float scale = 1 ;//pSimApp.scene.background.terrainScale;
-        Vector3f center = new Vector3f(5*scale, 0, -scale/5);
+    final void bound() {
+        float scale = pSimApp.scene.terrainScale/5;
+        float height = scale*35*2;
+        Vector3f center = new Vector3f(5*scale, 1, -scale/5);
         Vector3f size = new Vector3f(-45*scale, 0, -35*scale);
         Vector3f localCamPos = cam.getLocation().subtract(center);
-        //float heightScale = localCamPos.y/;
-        
-        if (localCamPos.x < size.x) {localCamPos.x = size.x; System.out.println("neg x edge");}
-        if (localCamPos.x > -size.x) {localCamPos.x = -size.x; System.out.println("pos x edge");}
-        if (localCamPos.z < size.z) {localCamPos.z = size.z; System.out.println("neg z edge");}
-        if (localCamPos.z > -size.z) {localCamPos.z = -size.z; System.out.println("pos z edge");}
+        if (localCamPos.y < 0) localCamPos.y = 0;
+        if (localCamPos.y > height) localCamPos.y = height;
+        float heightScale = (height - localCamPos.y)/height;
+        size = size.mult(heightScale);
+        if (localCamPos.x < size.x) {localCamPos.x = size.x;}
+        if (localCamPos.x > -size.x) {localCamPos.x = -size.x;}
+        if (localCamPos.z < size.z) {localCamPos.z = size.z;}
+        if (localCamPos.z > -size.z) {localCamPos.z = -size.z;}
         cam.setLocation(localCamPos.add(center));
-        System.out.println(localCamPos.x + ", " + localCamPos.z);
-//            terrain.setLocalScale(terrainScale, terrainScale/1.5f, terrainScale);
-//            terrain.getLocalRotation().fromAngleAxis(FastMath.PI, Vector3f.UNIT_Y);
-//            terrain.setLocalTranslation(-5*terrainScale, 0, terrainScale/5f);
+        float panUp = 0;
+        //if (localCamPos.y < 2) panUp = (2 - localCamPos.y)/2;
+        //Vector3f panUpVec = Vector3f.UNIT_Z.mult(panUp);
+        //cam.lookAtDirection(Vector3f.UNIT_Y.mult(-1).add(), up);
     }
     public void onAction(String name, boolean value, float tpf) {
         if (name.equals("PANCAM_Drag")){
@@ -130,12 +136,10 @@ flyByReg = true;
         } else if (name.equals("SWITCH_CAM")) { //TODO debug only
             if (!value) return;
             if (flyBy) {
-                System.out.println("disable flycam");
                 flyByCam.setEnabled(false);
                 flyBy = false;
                 register();
             } else {
-                System.out.println("enable flycam");
                 unregister();
                 flyByCam.setEnabled(true);
                 flyBy = true;

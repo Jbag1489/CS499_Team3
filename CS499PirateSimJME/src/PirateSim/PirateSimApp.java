@@ -17,7 +17,7 @@ public class PirateSimApp extends SimpleApplication {
     PanCamera panCam; //SimpleApplication's FlyCam is not suitable for this application, so this camera is used
     float timeSinceLastFrame, timeSinceLastTick;
     static final int targetFPS = 30;
-    private MyStartScreen startScreen;
+    MyStartScreen startScreen;
     final long DEFAULT_SEED = 6545;
 
     /**
@@ -86,7 +86,7 @@ public class PirateSimApp extends SimpleApplication {
         rootNode.detachAllChildren();
         rootNode.getLocalLightList().clear();
         viewPort.clearProcessors();
-        scene = new Scene(pSim, rootNode, assetManager, viewPort);
+        scene = new Scene(pSim, rootNode, assetManager, viewPort, this);
     }
 
     /**
