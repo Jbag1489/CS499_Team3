@@ -198,8 +198,6 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
      */
     private void updateSpeedLabel() {
         String speedLabelText = "Sim Speed: " + simSpeeds[speedIndex];
-//        System.out.println("Sim speed changed to "
-//                + String.format("%.1f", simSpeeds[speedIndex]));
         simSpeedLabel.setText(speedLabelText);
     }
 
