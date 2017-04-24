@@ -107,10 +107,9 @@ public class MyStartScreen extends AbstractAppState implements ScreenController 
                 (double) cargoProb.getValue(), (double) pirateProb.getValue(),
                 (double) patrolProb.getValue(), seed);
         pApp.setSim(newSim);
-        System.out.println("wtf");
         setPaused(false);
-        System.out.println("The simulatin is running: " + paused);
-        simSpeed = simSpeeds[DEFAULT_SPEED_INDEX];
+        speedIndex = DEFAULT_SPEED_INDEX;
+        simSpeed = simSpeeds[speedIndex];
         updateSpeedLabel();
     }
 
