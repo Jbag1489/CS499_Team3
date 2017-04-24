@@ -14,6 +14,11 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.renderer.Camera;
 import com.jme3.input.FlyByCamera;
 import com.jme3.math.Vector3f;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Transform;
+import com.jme3.math.FastMath;
+import com.jme3.math.Matrix4f;
+
 
 /**
  * This class implements a camera that pans around.
@@ -126,9 +131,11 @@ public class PanCamera implements AnalogListener, ActionListener {
         if (localCamPos.z > -size.z) {localCamPos.z = -size.z;}
         cam.setLocation(localCamPos.add(center));
         float panUp = 0;
-        //if (localCamPos.y < 2) panUp = (2 - localCamPos.y)/2;
-        //Vector3f panUpVec = Vector3f.UNIT_Z.mult(panUp);
-        //cam.lookAtDirection(Vector3f.UNIT_Y.mult(-1).add(), up);
+        float panUpHeight = 8;
+        if (localCamPos.y < panUpHeight) panUp = (panUpHeight - localCamPos.y)/panUpHeight;
+        Matrix4f panUpRot = new Matrix4f();
+        panUpRot.fromAngleAxis(-panUp*FastMath.PI/3f, Vector3f.UNIT_X);
+        cam.lookAtDirection(panUpRot.mult(Vector3f.UNIT_Y.mult(-1)), up);
     }
     public void onAction(String name, boolean value, float tpf) {
         if (name.equals("PANCAM_Drag")){
